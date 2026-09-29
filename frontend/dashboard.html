@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediCare Pro | Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --primary-dark: #1557b0;
+            --primary-light: #e8f0fe;
+            --success: #1e8e3e;
+            --success-bg: #e6f4ea;
+            --warning: #b06000;
+            --warning-bg: #fef7e0;
+            --danger: #d93025;
+            --danger-bg: #fce8e6;
+            --purple: #7c3aed;
+            --teal: #0d9488;
+            --dark: #202124;
+            --text: #3c4043;
+            --gray: #5f6368;
+            --muted: #80868b;
+            --border: #dadce0;
+            --bg: #f5f6f8;
+            --sidebar-width: 250px;
+            --header-height: 64px;
+            --shadow-sm: 0 1px 2px rgba(60,64,67,0.1);
+            --shadow-md: 0 1px 3px rgba(60,64,67,0.15);
+            --shadow-lg: 0 4px 12px rgba(60,64,67,0.15);
+            --radius: 8px;
+            --radius-sm: 6px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, Arial, sans-serif; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-size: 14px;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #c1c5c9; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a0a4a8; }
+
+        .app { display: flex; min-height: 100vh; }
+
+        /* ---------- Sidebar ---------- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: #1a2332;
+            color: #e8eaed;
+            height: 100vh;
+            position: fixed;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.25s ease;
+        }
+
+        .logo {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .logo i { font-size: 24px; margin-right: 10px; color: #8ab4f8; }
+        .logo h1 { font-size: 18px; font-weight: 600; letter-spacing: -0.2px; color: #fff; }
+        .logo h1 span { font-weight: 400; color: #9aa0a6; }
+
+        .nav-links {
+            list-style: none;
+            padding: 12px 8px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .nav-links li { margin-bottom: 2px; }
+
+        .nav-links li a {
+            display: flex;
+            align-items: center;
+            color: #bdc1c6;
+            text-decoration: none;
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+
+        .nav-links li a:hover { background: rgba(255, 255, 255, 0.06); color: #fff; }
+        .nav-links li.active a { background: rgba(138, 180, 248, 0.15); color: #8ab4f8; }
+        .nav-links li a i { margin-right: 12px; font-size: 16px; width: 20px; text-align: center; }
+
+        .nav-links li.divider {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* ---------- Main Panel ---------- */
+        .main-panel { flex: 1; margin-left: var(--sidebar-width); min-width: 0; }
+
+        /* ---------- Top Bar ---------- */
+        .top-bar {
+            height: var(--header-height);
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            position: sticky;
+            top: 0;
+            z-index: 99;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header-left { display: flex; align-items: center; gap: 16px; }
+        .menu-icon { display: none; font-size: 18px; cursor: pointer; color: var(--gray); padding: 6px; }
+
+        .greeting {
+            font-size: 13px;
+            color: var(--muted);
+        }
+        .greeting strong { color: var(--dark); font-weight: 600; }
+
+        .header-right { display: flex; align-items: center; gap: 16px; }
+
+        .header-right .notification {
+            font-size: 16px;
+            color: var(--gray);
+            cursor: pointer;
+            position: relative;
+            padding: 6px;
+        }
+        .header-right .notification:hover { color: var(--dark); }
+        .header-right .notification .badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--danger);
+            color: #fff;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        .header-right .notification .badge.hidden { display: none; }
+
+        .user-profile {
+            display: flex; align-items: center; gap: 10px;
+            cursor: pointer; padding: 4px 8px; border-radius: var(--radius-sm);
+            position: relative;
+        }
+        .user-profile:hover { background: var(--bg); }
+        .user-profile .user-name { font-weight: 500; font-size: 13px; color: var(--dark); }
+        .user-profile .user-role { font-size: 11px; color: var(--muted); }
+        .user-profile .user-avatar-initials {
+            width: 34px; height: 34px; border-radius: 50%;
+            background: var(--primary-light); color: var(--primary);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 600; font-size: 13px;
+            flex-shrink: 0;
+        }
+
+        .user-dropdown {
+            position: absolute; top: 100%; right: 0;
+            background: #fff; border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-lg); min-width: 180px;
+            padding: 8px 0; display: none; z-index: 100; margin-top: 8px;
+            border: 1px solid var(--border);
+        }
+        .user-dropdown.show { display: block; }
+        .user-dropdown a {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 16px; color: var(--dark);
+            text-decoration: none; transition: background 0.15s ease;
+            font-size: 13px;
+        }
+        .user-dropdown a:hover { background: var(--bg); }
+        .user-dropdown a i { width: 20px; color: var(--gray); }
+
+        /* ---------- Content ---------- */
+        .content { padding: 24px; max-width: 1400px; margin: 0 auto; }
+
+        /* ---------- Page Header ---------- */
+        .page-header {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .page-header h1 {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--dark);
+            letter-spacing: -0.2px;
+        }
+        .page-header h1 small {
+            font-size: 13px;
+            font-weight: 400;
+            color: var(--muted);
+            display: block;
+            margin-top: 4px;
+        }
+        .header-actions { display: flex; gap: 8px; align-items: center; }
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 9px 18px;
+            border-radius: var(--radius-sm);
+            font-weight: 500;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.15s ease;
+            font-family: inherit;
+            text-decoration: none;
+        }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-secondary {
+            background: #fff;
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 9px 16px;
+            border-radius: var(--radius-sm);
+            font-weight: 500;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.15s ease;
+            font-family: inherit;
+            text-decoration: none;
+        }
+        .btn-secondary:hover { background: var(--bg); }
+
+        /* ---------- Stats grid ---------- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .stat-tile {
+            background: #fff;
+            border-radius: var(--radius);
+            padding: 16px 18px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            transition: box-shadow 0.15s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+        .stat-tile:hover { box-shadow: var(--shadow-md); }
+        .stat-tile .st-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .stat-tile .st-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        .stat-tile .st-icon.blue { background: var(--primary-light); color: var(--primary); }
+        .stat-tile .st-icon.green { background: var(--success-bg); color: var(--success); }
+        .stat-tile .st-icon.amber { background: var(--warning-bg); color: var(--warning); }
+        .stat-tile .st-icon.red { background: var(--danger-bg); color: var(--danger); }
+        .stat-tile .st-icon.purple { background: #f3e8ff; color: var(--purple); }
+        .stat-tile .st-icon.teal { background: #ccfbf1; color: var(--teal); }
+        .stat-tile .st-change {
+            font-size: 11px;
+            color: var(--muted);
+            font-weight: 500;
+        }
+        .stat-tile .st-change.up { color: var(--success); }
+        .stat-tile .st-change.down { color: var(--danger); }
+        .stat-tile .st-number {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--dark);
+            line-height: 1.1;
+        }
+        .stat-tile .st-label {
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        /* ---------- Main grid ---------- */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .panel {
+            background: #fff;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+        .panel-head {
+            padding: 14px 18px;
+            border-bottom: 1px solid #f1f3f4;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .panel-head h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .panel-head h3 i { color: var(--primary); }
+        .panel-head a {
+            font-size: 12px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .panel-head a:hover { text-decoration: underline; }
+        .panel-body { padding: 16px 18px; }
+
+        /* Chart */
+        .chart-wrap {
+            position: relative;
+            height: 220px;
+            padding: 8px 0 0;
+        }
+        #admissionsChart {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .chart-legend {
+            display: flex;
+            gap: 16px;
+            padding: 8px 18px 14px;
+            font-size: 11px;
+            color: var(--muted);
+        }
+        .chart-legend .lg-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .chart-legend .lg-dot {
+            width: 10px; height: 10px; border-radius: 50%;
+        }
+
+        /* Lists */
+        .list-clean {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+        }
+        .list-clean li {
+            padding: 10px 18px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            border-bottom: 1px solid #f8f9fa;
+        }
+        .list-clean li:last-child { border-bottom: none; }
+
+        .avatar-sm {
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            background: var(--primary-light);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px; font-weight: 600;
+            flex-shrink: 0;
+            text-transform: uppercase;
+        }
+        .avatar-sm.amber { background: var(--warning-bg); color: var(--warning); }
+        .avatar-sm.green { background: var(--success-bg); color: var(--success); }
+        .avatar-sm.red { background: var(--danger-bg); color: var(--danger); }
+        .avatar-sm.purple { background: #f3e8ff; color: var(--purple); }
+        .avatar-sm.blue { background: var(--primary-light); color: var(--primary); }
+        .avatar-sm.teal { background: #ccfbf1; color: var(--teal); }
+
+        .li-main { flex: 1; min-width: 0; }
+        .li-main .li-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--dark);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .li-main .li-sub {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .li-meta {
+            font-size: 11px;
+            color: var(--muted);
+            flex-shrink: 0;
+            text-align: right;
+        }
+        .li-meta .badge-sm {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-top: 3px;
+        }
+        .badge-sm.green { background: var(--success-bg); color: var(--success); }
+        .badge-sm.amber { background: var(--warning-bg); color: var(--warning); }
+        .badge-sm.red { background: var(--danger-bg); color: var(--danger); }
+        .badge-sm.blue { background: var(--primary-light); color: var(--primary); }
+        .badge-sm.purple { background: #f3e8ff; color: var(--purple); }
+
+        .panel-empty {
+            text-align: center;
+            padding: 32px 20px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+        .panel-empty i {
+            font-size: 24px;
+            display: block;
+            margin-bottom: 8px;
+            color: #c8cbd0;
+        }
+
+        .dual-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .toast {
+            position: fixed; bottom: 20px; right: 20px;
+            padding: 12px 18px; border-radius: var(--radius-sm);
+            color: #fff; font-weight: 500; font-size: 13px;
+            z-index: 9999; box-shadow: var(--shadow-lg);
+            max-width: 360px; animation: slideUp 0.25s ease;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 1100px) {
+            .main-grid, .dual-row { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 992px) {
+            .stats-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.mobile-open { transform: translateX(0); }
+            .main-panel { margin-left: 0; }
+            .menu-icon { display: block; }
+            .content { padding: 16px; }
+            .top-bar { padding: 0 16px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .greeting { display: none; }
+            .header-actions { width: 100%; justify-content: stretch; }
+            .header-actions .btn-primary,
+            .header-actions .btn-secondary { flex: 1; justify-content: center; }
+            .user-profile .user-name, .user-profile .user-role { display: none; }
+        }
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .stat-tile { padding: 14px; }
+            .stat-tile .st-number { font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="logo">
+            <i class="fas fa-heartbeat"></i>
+            <h1>MediCare <span>Pro</span></h1>
+        </div>
+        <ul class="nav-links">
+            <li class="active"><a href="dashboard.html"><i class="fas fa-home"></i><span>Dashboard</span></a></li>
+            <li><a href="patients.html"><i class="fas fa-user-injured"></i><span>Patients</span></a></li>
+            <li><a href="appointment.html"><i class="fas fa-calendar-check"></i><span>Appointments</span></a></li>
+            <li><a href="doctors.html"><i class="fas fa-user-md"></i><span>Doctors</span></a></li>
+            <li><a href="departments.html"><i class="fas fa-procedures"></i><span>Departments</span></a></li>
+            <li><a href="pharmacy.html"><i class="fas fa-pills"></i><span>Pharmacy</span></a></li>
+            <li><a href="settings.html"><i class="fas fa-cog"></i><span>Settings</span></a></li>
+            <li><a href="loginpg.html" class="logout-link"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a></li>
+        </ul>
+    </div>
+
+    <div class="main-panel">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="header-left">
+                <div class="menu-icon" id="menuToggle"><i class="fas fa-bars"></i></div>
+                <div class="greeting">
+                    Welcome back, <strong id="greetingName">User</strong>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="notification" id="notifBtn">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge hidden" id="notifBadge">0</span>
+                </div>
+                <div class="user-profile" id="userProfileBtn">
+                    <div class="user-avatar-initials" id="userAvatarInitials">U</div>
+                    <div>
+                        <div class="user-name" id="sidebarUserName">Loading...</div>
+                        <div class="user-role" id="sidebarUserRole">—</div>
+                    </div>
+                    <div class="user-dropdown" id="userDropdown">
+                        <a href="settings.html"><i class="fas fa-cog"></i> Settings</a>
+                        <a href="loginpg.html?fresh=1" class="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <h1>
+                        Dashboard
+                        <small>Live overview of your hospital — everything updates automatically</small>
+                    </h1>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-secondary" id="refreshBtn">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                    <a href="appointment.html" class="btn-secondary" id="newAppointmentBtn">
+                        <i class="fas fa-calendar-plus"></i> New Appointment
+                    </a>
+                    <button class="btn-primary" id="scanVitalsBtn">
+                        <i class="fas fa-fingerprint"></i> Start Vitals Scan
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main stats grid -->
+            <div class="stats-grid" id="statsGrid">
+                <a class="stat-tile" href="patients.html">
+                    <div class="st-head">
+                        <span class="st-icon green"><i class="fas fa-user-injured"></i></span>
+                        <span class="st-change" id="patientsChange">—</span>
+                    </div>
+                    <div class="st-number" id="patientsCount">—</div>
+                    <div class="st-label">Total Patients</div>
+                </a>
+
+                <a class="stat-tile" href="appointment.html">
+                    <div class="st-head">
+                        <span class="st-icon blue"><i class="fas fa-calendar-check"></i></span>
+                        <span class="st-change" id="apptsChange">—</span>
+                    </div>
+                    <div class="st-number" id="apptsCount">—</div>
+                    <div class="st-label">Appointments</div>
+                </a>
+
+                <a class="stat-tile" href="doctors.html">
+                    <div class="st-head">
+                        <span class="st-icon blue"><i class="fas fa-user-md"></i></span>
+                        <span class="st-change" id="doctorsChange">—</span>
+                    </div>
+                    <div class="st-number" id="doctorsCount">—</div>
+                    <div class="st-label">Doctors</div>
+                </a>
+
+                <a class="stat-tile" href="departments.html">
+                    <div class="st-head">
+                        <span class="st-icon purple"><i class="fas fa-procedures"></i></span>
+                        <span class="st-change" id="deptsChange">—</span>
+                    </div>
+                    <div class="st-number" id="deptsCount">—</div>
+                    <div class="st-label">Departments</div>
+                </a>
+
+                <a class="stat-tile" href="pharmacy.html">
+                    <div class="st-head">
+                        <span class="st-icon amber"><i class="fas fa-pills"></i></span>
+                        <span class="st-change" id="medsChange">—</span>
+                    </div>
+                    <div class="st-number" id="medsCount">—</div>
+                    <div class="st-label">Medications</div>
+                </a>
+
+                <a class="stat-tile" href="pharmacy.html">
+                    <div class="st-head">
+                        <span class="st-icon red"><i class="fas fa-exclamation-triangle"></i></span>
+                        <span class="st-change" id="lowStockChange">—</span>
+                    </div>
+                    <div class="st-number" id="lowStockCount">—</div>
+                    <div class="st-label">Low Stock Alerts</div>
+                </a>
+
+                <a class="stat-tile" href="vitals-scan.html">
+                    <div class="st-head">
+                        <span class="st-icon teal"><i class="fas fa-heartbeat"></i></span>
+                        <span class="st-change" id="vitalsChange">—</span>
+                    </div>
+                    <div class="st-number" id="vitalsCount">—</div>
+                    <div class="st-label">Vitals Recorded</div>
+                </a>
+            </div>
+
+            <!-- Main grid -->
+            <div class="main-grid">
+                <div class="panel">
+                    <div class="panel-head">
+                        <h3><i class="fas fa-chart-line"></i> Weekly Vitals Activity</h3>
+                        <a href="vitals-scan.html">View all →</a>
+                    </div>
+                    <div class="chart-wrap">
+                        <canvas id="admissionsChart"></canvas>
+                    </div>
+                    <div class="chart-legend">
+                        <div class="lg-item"><span class="lg-dot" style="background:#1a73e8;"></span> Internal readings</div>
+                        <div class="lg-item"><span class="lg-dot" style="background:#7c3aed;"></span> Public scans</div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-head">
+                        <h3><i class="fas fa-calendar-check"></i> Upcoming Appointments</h3>
+                        <a href="appointment.html">View all →</a>
+                    </div>
+                    <ul class="list-clean" id="appointmentsList">
+                        <li><div class="panel-empty" style="width:100%;"><i class="fas fa-spinner fa-spin"></i> Loading...</div></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Dual row -->
+            <div class="dual-row">
+                <div class="panel">
+                    <div class="panel-head">
+                        <h3><i class="fas fa-user-injured"></i> Recent Patients</h3>
+                        <a href="patients.html">View all →</a>
+                    </div>
+                    <ul class="list-clean" id="recentPatientsList">
+                        <li><div class="panel-empty" style="width:100%;"><i class="fas fa-spinner fa-spin"></i> Loading...</div></li>
+                    </ul>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-head">
+                        <h3><i class="fas fa-pills"></i> Stock Alerts</h3>
+                        <a href="pharmacy.html">View all →</a>
+                    </div>
+                    <ul class="list-clean" id="stockAlertsList">
+                        <li><div class="panel-empty" style="width:100%;"><i class="fas fa-spinner fa-spin"></i> Loading...</div></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Department + Public scans row -->
+            <div class="dual-row">
+                <div class="panel">
+                    <div class="panel-head">
+                        <h3><i class="fas fa-building"></i> Department Overview</h3>
+                        <a href="departments.html">Manage →</a>
+                    </div>
+                    <ul class="list-clean" id="departmentsList">
+                        <li><div class="panel-empty" style="width:100%;"><i class="fas fa-spinner fa-spin"></i> Loading...</div></li>
+                    </ul>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-head">
+                        <h3><i class="fas fa-fingerprint"></i> Recent Public Vitals Scans</h3>
+                        <a href="vitals-scan.html">Open scanner →</a>
+                    </div>
+                    <ul class="list-clean" id="publicScansList">
+                        <li><div class="panel-empty" style="width:100%;"><i class="fas fa-spinner fa-spin"></i> Loading...</div></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ---------- Role guard ---------- -->
+<script src="js/role-guard.js" data-page="dashboard"></script>
+
+<script>
+    // ============================================================
+    // DASHBOARD - Real-time data fetching from all APIs
+    // ============================================================
+
+    const API = {
+        patients: '/api/patients',
+        doctors: '/api/doctors',
+        departments: '/api/departments',
+        pharmacy: '/api/pharmacy',
+        vitals: '/api/vitals',
+        publicVitals: '/api/public/vitals/recent',
+        appointments: '/api/appointments'    // ⭐ NEW
+    };
+
+    const REFRESH_INTERVAL = 30000;
+
+    // ---------- AUTH ----------
+    function getToken() { return localStorage.getItem('authToken'); }
+    function authHeaders() {
+        const t = getToken();
+        return t ? { 'Authorization': `Bearer ${t}` } : {};
+    }
+
+    // ---------- ESCAPE ----------
+    function escapeHtml(s) {
+        if (s == null) return '';
+        return String(s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+
+    // ---------- DATE HELPERS ----------
+    function fmtTime(d) {
+        if (!d) return '—';
+        const date = new Date(d);
+        if (isNaN(date.getTime())) return '—';
+        const now = new Date();
+        const diffMin = Math.floor((now - date) / 60000);
+        if (diffMin < 1) return 'Just now';
+        if (diffMin < 60) return `${diffMin}m ago`;
+        if (diffMin < 1440) return `${Math.floor(diffMin / 60)}h ago`;
+        if (diffMin < 10080) return `${Math.floor(diffMin / 1440)}d ago`;
+        return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    }
+    function todayStr() {
+        const d = new Date();
+        d.setHours(0, 0, 0, 0);
+        return d.toISOString().slice(0, 10);
+    }
+    function fmtApptDate(dateStr, timeStr) {
+        if (!dateStr) return '—';
+        const t = todayStr();
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomStr = tomorrow.toISOString().slice(0, 10);
+        let dayLabel = dateStr;
+        if (dateStr === t) dayLabel = 'Today';
+        else if (dateStr === tomStr) dayLabel = 'Tomorrow';
+        else {
+            const d = new Date(dateStr + 'T00:00');
+            if (!isNaN(d.getTime())) {
+                dayLabel = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+            }
+        }
+        return dayLabel + (timeStr ? ' · ' + timeStr : '');
+    }
+
+    // ---------- INITIALS ----------
+    function initials(name) {
+        if (!name) return '?';
+        return name.replace(/^Dr\.?\s*/i, '').split(/\s+/).filter(Boolean)
+            .slice(0, 2).map(w => w[0].toUpperCase()).join('');
+    }
+
+    // ---------- ANIMATE ----------
+    function animateNumber(el, target, suffix = '') {
+        const start = parseInt(el.textContent) || 0;
+        const duration = 600;
+        const startTime = performance.now();
+        function tick(now) {
+            const t = Math.min(1, (now - startTime) / duration);
+            const eased = 1 - Math.pow(1 - t, 3);
+            const val = Math.round(start + (target - start) * eased);
+            el.textContent = val + suffix;
+            if (t < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+    }
+
+    // ---------- SAFE FETCH ----------
+    async function safeFetch(url) {
+        try {
+            const r = await fetch(url, { headers: authHeaders() });
+            if (!r.ok) return { data: [] };
+            const j = await r.json();
+            return j || { data: [] };
+        } catch (e) {
+            console.error('Fetch error:', url, e);
+            return { data: [] };
+        }
+    }
+
+    // ---------- STATE ----------
+    let state = {
+        patients: [],
+        doctors: [],
+        departments: [],
+        medications: [],
+        vitals: [],
+        publicVitals: [],
+        appointments: []    // ⭐ NEW
+    };
+
+    // ---------- LOAD ----------
+    async function loadAll() {
+        const [p, d, dp, m, v, pv, ap] = await Promise.all([
+            safeFetch(API.patients),
+            safeFetch(API.doctors),
+            safeFetch(API.departments),
+            safeFetch(API.pharmacy),
+            safeFetch(API.vitals),
+            safeFetch(API.publicVitals),
+            safeFetch(API.appointments)    // ⭐ NEW
+        ]);
+
+        state.patients = p.data || [];
+        state.doctors = d.data || [];
+        state.departments = dp.data || [];
+        state.medications = m.data || [];
+        state.vitals = v.data || [];
+        state.publicVitals = pv.data || [];
+        state.appointments = ap.data || [];    // ⭐ NEW
+
+        renderStats();
+        renderChart();
+        renderAppointments();       // ⭐ NEW
+        renderRecentPatients();
+        renderDepartments();
+        renderStockAlerts();
+        renderPublicScans();
+        updateNotifBadge();
+    }
+
+    // ---------- STATS ----------
+    function renderStats() {
+        // Patients
+        const patientsCount = state.patients.length;
+        animateNumber(document.getElementById('patientsCount'), patientsCount);
+        const activePatients = state.patients.filter(p => p.status === 'Active').length;
+        const pChange = document.getElementById('patientsChange');
+        pChange.textContent = `${activePatients} active`;
+        pChange.className = 'st-change up';
+
+        // ⭐ NEW: Appointments
+        const apptsCount = state.appointments.length;
+        animateNumber(document.getElementById('apptsCount'), apptsCount);
+        const todayAppts = state.appointments.filter(a => a.date === todayStr()).length;
+        const pendingAppts = state.appointments.filter(a => a.status === 'pending').length;
+        const aChange = document.getElementById('apptsChange');
+        if (todayAppts > 0) {
+            aChange.textContent = `${todayAppts} today`;
+            aChange.className = 'st-change up';
+        } else if (pendingAppts > 0) {
+            aChange.textContent = `${pendingAppts} pending`;
+            aChange.className = 'st-change down';
+        } else {
+            aChange.textContent = 'none today';
+            aChange.className = 'st-change';
+        }
+
+        // Doctors
+        const doctorsCount = state.doctors.length;
+        animateNumber(document.getElementById('doctorsCount'), doctorsCount);
+        const availableDocs = state.doctors.filter(d => d.status === 'Available').length;
+        const dChange = document.getElementById('doctorsChange');
+        dChange.textContent = `${availableDocs} available`;
+        dChange.className = 'st-change';
+
+        // Departments
+        const deptsCount = state.departments.length;
+        animateNumber(document.getElementById('deptsCount'), deptsCount);
+        const activeDepts = state.departments.filter(d => d.status === 'Active').length;
+        const dpChange = document.getElementById('deptsChange');
+        dpChange.textContent = `${activeDepts} active`;
+        dpChange.className = 'st-change';
+
+        // Medications
+        const medsCount = state.medications.length;
+        animateNumber(document.getElementById('medsCount'), medsCount);
+        const totalStock = state.medications.reduce((sum, m) => sum + (parseInt(m.quantity) || 0), 0);
+        const mChange = document.getElementById('medsChange');
+        mChange.textContent = `${totalStock} units total`;
+        mChange.className = 'st-change';
+
+        // Low Stock
+        const lowStock = state.medications.filter(m => {
+            const q = parseInt(m.quantity) || 0;
+            const min = parseInt(m.minStock) || 10;
+            return q <= min;
+        }).length;
+        animateNumber(document.getElementById('lowStockCount'), lowStock);
+        const lsChange = document.getElementById('lowStockChange');
+        lsChange.textContent = lowStock ? 'needs attention' : 'all good';
+        lsChange.className = lowStock ? 'st-change down' : 'st-change up';
+
+        // Vitals
+        const vitalsCount = state.vitals.length;
+        animateNumber(document.getElementById('vitalsCount'), vitalsCount);
+        const todayVitals = state.vitals.filter(v => {
+            const d = new Date(v.recordedAt || v.createdAt);
+            const now = new Date();
+            return d.toDateString() === now.toDateString();
+        }).length;
+        const vChange = document.getElementById('vitalsChange');
+        vChange.textContent = `${todayVitals} today`;
+        vChange.className = 'st-change';
+    }
+
+    // ---------- CHART ----------
+    function renderChart() {
+        const canvas = document.getElementById('admissionsChart');
+        if (!canvas) return;
+
+        const days = [];
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date(today);
+            d.setDate(d.getDate() - i);
+            days.push({
+                date: d,
+                label: d.toLocaleDateString(undefined, { weekday: 'short' }),
+                internal: 0,
+                public: 0
+            });
+        }
+
+        state.vitals.forEach(v => {
+            const d = new Date(v.recordedAt || v.createdAt);
+            if (isNaN(d.getTime())) return;
+            d.setHours(0, 0, 0, 0);
+            const idx = days.findIndex(day => day.date.getTime() === d.getTime());
+            if (idx !== -1) days[idx].internal++;
+        });
+        state.publicVitals.forEach(v => {
+            const d = new Date(v.recordedAt || v.createdAt);
+            if (isNaN(d.getTime())) return;
+            d.setHours(0, 0, 0, 0);
+            const idx = days.findIndex(day => day.date.getTime() === d.getTime());
+            if (idx !== -1) days[idx].public++;
+        });
+
+        drawBarChart(canvas, days);
+    }
+
+    function drawBarChart(canvas, days) {
+        const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(dpr, dpr);
+
+        const W = rect.width;
+        const H = rect.height;
+        const padding = { top: 16, right: 16, bottom: 32, left: 36 };
+        const chartW = W - padding.left - padding.right;
+        const chartH = H - padding.top - padding.bottom;
+
+        ctx.clearRect(0, 0, W, H);
+
+        const maxVal = Math.max(1, ...days.map(d => Math.max(d.internal, d.public)));
+        const niceMax = Math.ceil(maxVal / 5) * 5 || 5;
+
+        ctx.strokeStyle = '#f0f2f5';
+        ctx.lineWidth = 1;
+        for (let i = 0; i <= 4; i++) {
+            const y = padding.top + (chartH * i / 4);
+            ctx.beginPath();
+            ctx.moveTo(padding.left, y);
+            ctx.lineTo(W - padding.right, y);
+            ctx.stroke();
+
+            ctx.fillStyle = '#9aa0a6';
+            ctx.font = '10px -apple-system, Segoe UI, Roboto, sans-serif';
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+            const val = Math.round(niceMax * (1 - i / 4));
+            ctx.fillText(val.toString(), padding.left - 6, y);
+        }
+
+        const groupW = chartW / days.length;
+        const barW = Math.min(16, groupW * 0.3);
+        const gap = 4;
+
+        days.forEach((day, i) => {
+            const cx = padding.left + groupW * i + groupW / 2;
+
+            const hInt = (day.internal / niceMax) * chartH;
+            const xInt = cx - barW - gap / 2;
+            const yInt = padding.top + chartH - hInt;
+            const grad1 = ctx.createLinearGradient(0, yInt, 0, yInt + hInt);
+            grad1.addColorStop(0, '#1a73e8');
+            grad1.addColorStop(1, '#8ab4f8');
+            ctx.fillStyle = grad1;
+            roundRect(ctx, xInt, yInt, barW, hInt, 3);
+            ctx.fill();
+
+            const hPub = (day.public / niceMax) * chartH;
+            const xPub = cx + gap / 2;
+            const yPub = padding.top + chartH - hPub;
+            const grad2 = ctx.createLinearGradient(0, yPub, 0, yPub + hPub);
+            grad2.addColorStop(0, '#7c3aed');
+            grad2.addColorStop(1, '#c4b5fd');
+            ctx.fillStyle = grad2;
+            roundRect(ctx, xPub, yPub, barW, hPub, 3);
+            ctx.fill();
+
+            ctx.fillStyle = '#80868b';
+            ctx.font = '11px -apple-system, Segoe UI, Roboto, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillText(day.label, cx, padding.top + chartH + 8);
+        });
+    }
+
+    function roundRect(ctx, x, y, w, h, r) {
+        if (h < r * 2) r = h / 2;
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h);
+        ctx.lineTo(x, y + h);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+    }
+
+    // ---------- ⭐ NEW: APPOINTMENTS LIST ----------
+    function renderAppointments() {
+        const list = document.getElementById('appointmentsList');
+        const today = todayStr();
+        const upcoming = state.appointments
+            .filter(a => a.status !== 'cancelled' && a.status !== 'completed' && a.date >= today)
+            .sort((a, b) => {
+                const da = new Date((a.date || '') + 'T' + (a.time || '00:00'));
+                const db = new Date((b.date || '') + 'T' + (b.time || '00:00'));
+                return da - db;
+            })
+            .slice(0, 5);
+
+        if (!upcoming.length) {
+            list.innerHTML = `<li><div class="panel-empty" style="width:100%;"><i class="fas fa-calendar-check"></i>No upcoming appointments<br><a href="appointment.html" style="color:var(--primary); text-decoration:none; font-size:12px;">Schedule one →</a></div></li>`;
+            return;
+        }
+
+        list.innerHTML = upcoming.map(a => {
+            const patientInitials = initials(a.patientName);
+            const statusCls = {
+                scheduled: 'blue',
+                pending: 'amber',
+                completed: 'green',
+                cancelled: 'red'
+            }[a.status] || 'blue';
+            return `
+                <li>
+                    <div class="avatar-sm ${statusCls}">${escapeHtml(patientInitials)}</div>
+                    <div class="li-main">
+                        <div class="li-title">${escapeHtml(a.patientName || 'Unknown')}</div>
+                        <div class="li-sub">${escapeHtml(a.doctor || '—')} · ${escapeHtml(a.department || '—')}</div>
+                    </div>
+                    <div class="li-meta">
+                        ${escapeHtml(fmtApptDate(a.date, a.time))}
+                        <div class="badge-sm ${statusCls}">${escapeHtml((a.status || 'scheduled').toUpperCase())}</div>
+                    </div>
+                </li>
+            `;
+        }).join('');
+    }
+
+    // ---------- RECENT PATIENTS ----------
+    function renderRecentPatients() {
+        const list = document.getElementById('recentPatientsList');
+        const items = state.patients.slice(0, 5);
+
+        if (!items.length) {
+            list.innerHTML = `<li><div class="panel-empty" style="width:100%;"><i class="fas fa-user-injured"></i>No patients yet<br><a href="patients.html" style="color:var(--primary); text-decoration:none; font-size:12px;">Add your first patient →</a></div></li>`;
+            return;
+        }
+
+        list.innerHTML = items.map(p => {
+            const fullName = `${p.firstName || ''} ${p.lastName || ''}`.trim() || 'Unknown';
+            const statusCls = p.status === 'Critical' ? 'red' : p.status === 'Discharged' ? 'blue' : 'green';
+            return `
+                <li>
+                    <div class="avatar-sm ${statusCls}">${initials(fullName)}</div>
+                    <div class="li-main">
+                        <div class="li-title">${escapeHtml(fullName)}</div>
+                        <div class="li-sub">${escapeHtml(p.medicalCondition || p.gender || '—')}</div>
+                    </div>
+                    <div class="li-meta">
+                        ${fmtTime(p.createdAt)}
+                        <div class="badge-sm ${statusCls}">${escapeHtml(p.status || 'Active')}</div>
+                    </div>
+                </li>
+            `;
+        }).join('');
+    }
+
+    // ---------- DEPARTMENTS ----------
+    function renderDepartments() {
+        const list = document.getElementById('departmentsList');
+        const items = state.departments.slice(0, 5);
+
+        if (!items.length) {
+            list.innerHTML = `<li><div class="panel-empty" style="width:100%;"><i class="fas fa-procedures"></i>No departments yet<br><a href="departments.html" style="color:var(--primary); text-decoration:none; font-size:12px;">Add your first →</a></div></li>`;
+            return;
+        }
+
+        list.innerHTML = items.map(d => {
+            const doctors = d.doctorsCount || 0;
+            const staff = d.staffCount || 0;
+            const beds = d.totalBeds || 0;
+            const available = d.bedsAvailable || 0;
+            const statusCls = d.status === 'Active' ? 'green' : 'amber';
+            return `
+                <li>
+                    <div class="avatar-sm ${statusCls}">
+                        <i class="fas fa-procedures"></i>
+                    </div>
+                    <div class="li-main">
+                        <div class="li-title">${escapeHtml(d.name)}</div>
+                        <div class="li-sub">${doctors} doctors · ${staff} staff · ${available}/${beds} beds</div>
+                    </div>
+                    <div class="li-meta">
+                        <div class="badge-sm ${statusCls}">${escapeHtml(d.status || 'Active')}</div>
+                    </div>
+                </li>
+            `;
+        }).join('');
+    }
+
+    // ---------- STOCK ALERTS ----------
+    function renderStockAlerts() {
+        const list = document.getElementById('stockAlertsList');
+        const alerts = state.medications
+            .map(m => {
+                const qty = parseInt(m.quantity) || 0;
+                const min = parseInt(m.minStock) || 10;
+                let level = null;
+                if (qty === 0) level = 'out';
+                else if (qty <= min) level = 'low';
+                return { med: m, qty, min, level };
+            })
+            .filter(x => x.level)
+            .sort((a, b) => (a.level === 'out' ? -1 : 1) - (b.level === 'out' ? -1 : 1))
+            .slice(0, 5);
+
+        if (!alerts.length) {
+            list.innerHTML = `<li><div class="panel-empty" style="width:100%;"><i class="fas fa-check-circle" style="color:var(--success);"></i>All medications are sufficiently stocked</div></li>`;
+            return;
+        }
+
+        list.innerHTML = alerts.map(a => {
+            const isOut = a.level === 'out';
+            const cls = isOut ? 'red' : 'amber';
+            const label = isOut ? 'Out of stock' : 'Low stock';
+            return `
+                <li>
+                    <div class="avatar-sm ${cls}"><i class="fas fa-pills"></i></div>
+                    <div class="li-main">
+                        <div class="li-title">${escapeHtml(a.med.name)} ${escapeHtml(a.med.strength || '')}</div>
+                        <div class="li-sub">${a.qty} units · min ${a.min}</div>
+                    </div>
+                    <div class="li-meta">
+                        <div class="badge-sm ${cls}">${label}</div>
+                    </div>
+                </li>
+            `;
+        }).join('');
+    }
+
+    // ---------- PUBLIC SCANS ----------
+    function renderPublicScans() {
+        const list = document.getElementById('publicScansList');
+        const items = state.publicVitals.slice(0, 6);
+
+        if (!items.length) {
+            list.innerHTML = `<li><div class="panel-empty" style="width:100%;"><i class="fas fa-fingerprint"></i>No public scans yet<br><a href="vitals-scan.html" style="color:var(--primary); text-decoration:none; font-size:12px;">Try the scanner →</a></div></li>`;
+            return;
+        }
+
+        list.innerHTML = items.map(s => {
+            const lvlCls = {
+                normal: 'green', low: 'blue', elevated: 'amber',
+                high: 'red', critical: 'red'
+            }[s.overallLevel] || 'blue';
+            const who = s.displayName ? escapeHtml(s.displayName) : 'Anonymous';
+            return `
+                <li>
+                    <div class="avatar-sm ${lvlCls}"><i class="fas fa-fingerprint"></i></div>
+                    <div class="li-main">
+                        <div class="li-title">${who}</div>
+                        <div class="li-sub">Source: ${escapeHtml(s.source || 'manual')}</div>
+                    </div>
+                    <div class="li-meta">
+                        ${fmtTime(s.recordedAt)}
+                        <div class="badge-sm ${lvlCls}">${escapeHtml((s.overallLevel || 'normal').toUpperCase())}</div>
+                    </div>
+                </li>
+            `;
+        }).join('');
+    }
+
+    // ---------- NOTIF BADGE ----------
+    function updateNotifBadge() {
+        const lowStock = state.medications.filter(m => {
+            const q = parseInt(m.quantity) || 0;
+            const min = parseInt(m.minStock) || 10;
+            return q <= min;
+        }).length;
+        const pendingAppts = state.appointments.filter(a => a.status === 'pending').length;
+        const total = lowStock + pendingAppts;
+
+        const badge = document.getElementById('notifBadge');
+        if (total > 0) {
+            badge.textContent = total > 9 ? '9+' : total;
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+    }
+
+    // ---------- TOAST ----------
+    function showToast(msg, color = '#1a73e8') {
+        const existing = document.querySelector('.toast');
+        if (existing) existing.remove();
+        const t = document.createElement('div');
+        t.className = 'toast';
+        t.style.background = color;
+        t.textContent = msg;
+        document.body.appendChild(t);
+        setTimeout(() => {
+            t.style.opacity = '0';
+            t.style.transition = 'opacity 0.3s ease';
+            setTimeout(() => t.remove(), 300);
+        }, 3000);
+    }
+
+    // ---------- USER CHIP ----------
+    function loadUserChip() {
+        try {
+            const name = localStorage.getItem('medicare_user_name') || 'User';
+            const role = localStorage.getItem('medicare_user_role') || '';
+            const nameEl = document.getElementById('sidebarUserName');
+            const roleEl = document.getElementById('sidebarUserRole');
+            const initialsEl = document.getElementById('userAvatarInitials');
+            const greetEl = document.getElementById('greetingName');
+            if (nameEl) nameEl.textContent = name;
+            if (roleEl) roleEl.textContent = role ? role.charAt(0).toUpperCase() + role.slice(1) : '—';
+            if (greetEl) greetEl.textContent = name.split(' ')[0];
+            if (initialsEl) {
+                const parts = name.trim().split(/\s+/);
+                const f = (parts[0] || '?')[0] || '?';
+                const l = (parts[1] || '')[0] || '';
+                initialsEl.textContent = (f + l).toUpperCase();
+            }
+        } catch (e) {}
+    }
+
+    // ---------- BROADCAST ----------
+    function broadcastRefresh() {
+        try {
+            if (window.BroadcastChannel) {
+                const bc = new BroadcastChannel('medicare_sync');
+                bc.postMessage({ type: 'dashboard-refresh', at: Date.now() });
+                bc.close();
+            }
+        } catch (e) {}
+    }
+
+    // ---------- INIT ----------
+    document.addEventListener('DOMContentLoaded', async () => {
+        loadUserChip();
+        await loadAll();
+
+        // Refresh
+        document.getElementById('refreshBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('refreshBtn');
+            const orig = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+            await loadAll();
+            btn.disabled = false;
+            btn.innerHTML = orig;
+            showToast('Dashboard refreshed', '#1e8e3e');
+        });
+
+        // Vitals scan
+        document.getElementById('scanVitalsBtn').addEventListener('click', () => {
+            window.location.href = 'vitals-scan.html';
+        });
+
+        // Notification
+        document.getElementById('notifBtn').addEventListener('click', () => {
+            const lowStock = state.medications.filter(m => {
+                const q = parseInt(m.quantity) || 0;
+                const min = parseInt(m.minStock) || 10;
+                return q <= min;
+            }).length;
+            const pendingAppts = state.appointments.filter(a => a.status === 'pending').length;
+            const todayAppts = state.appointments.filter(a => a.date === todayStr()).length;
+            const parts = [];
+            if (todayAppts > 0) parts.push(`${todayAppts} appointment${todayAppts > 1 ? 's' : ''} today`);
+            if (pendingAppts > 0) parts.push(`${pendingAppts} pending`);
+            if (lowStock > 0) parts.push(`${lowStock} low-stock item${lowStock > 1 ? 's' : ''}`);
+            showToast(parts.length ? parts.join(' · ') : 'No new notifications', '#1a73e8');
+        });
+
+        // User dropdown
+        const userBtn = document.getElementById('userProfileBtn');
+        const dd = document.getElementById('userDropdown');
+        if (userBtn && dd) {
+            userBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dd.classList.toggle('show');
+            });
+            document.addEventListener('click', (e) => {
+                if (!userBtn.contains(e.target)) dd.classList.remove('show');
+            });
+        }
+
+        // Logout
+        document.querySelectorAll('.logout-link').forEach(el => {
+            el.addEventListener('click', () => {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('user');
+                localStorage.removeItem('medicare_user_name');
+                localStorage.removeItem('medicare_user_email');
+                localStorage.removeItem('medicare_user_role');
+                document.cookie = 'authToken=;path=/;max-age=0';
+            });
+        });
+
+        // Mobile sidebar
+        document.getElementById('menuToggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('mobile-open');
+        });
+        document.addEventListener('click', (e) => {
+            const sidebar = document.getElementById('sidebar');
+            const toggle = document.getElementById('menuToggle');
+            if (window.innerWidth <= 768 && sidebar && !sidebar.contains(e.target) && !toggle.contains(e.target)) {
+                sidebar.classList.remove('mobile-open');
+            }
+        });
+
+        // Auto-refresh
+        setInterval(loadAll, REFRESH_INTERVAL);
+
+        // Visibility refresh
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) loadAll();
+        });
+
+        // Cross-tab sync
+        if (window.BroadcastChannel) {
+            const bc = new BroadcastChannel('medicare_sync');
+            bc.onmessage = (ev) => {
+                if (ev.data && (
+                    ev.data.type === 'appointments-updated' ||
+                    ev.data.type === 'patients-updated' ||
+                    ev.data.type === 'doctors-updated' ||
+                    ev.data.type === 'pharmacists-updated'
+                )) {
+                    loadAll();
+                }
+            };
+        }
+
+        // Redraw chart on resize
+        let rTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(rTimer);
+            rTimer = setTimeout(renderChart, 200);
+        });
+    });
+</script>
+</body>
+</html>

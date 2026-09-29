@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Instant Vitals Scan | MediCare Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --primary-dark: #1557b0;
+            --primary-light: #e8f0fe;
+            --success: #1e8e3e;
+            --success-bg: #e6f4ea;
+            --warning: #b06000;
+            --warning-bg: #fef7e0;
+            --danger: #d93025;
+            --danger-bg: #fce8e6;
+            --dark: #202124;
+            --text: #3c4043;
+            --gray: #5f6368;
+            --muted: #80868b;
+            --border: #dadce0;
+            --bg: #f0f4f9;
+            --radius: 14px;
+            --radius-sm: 8px;
+            --shadow: 0 8px 24px rgba(60,64,67,0.15);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, Arial, sans-serif; }
+        body { background: linear-gradient(180deg, #eef3fb 0%, #f0f4f9 100%); color: var(--text); font-size: 15px; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+        .public-nav {
+            background: #fff; border-bottom: 1px solid var(--border);
+            padding: 0 24px; height: 60px;
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 50;
+        }
+        .public-nav .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .public-nav .brand i { font-size: 22px; color: var(--primary); }
+        .public-nav .brand span { font-weight: 600; font-size: 16px; color: var(--dark); }
+        .public-nav .brand small { font-weight: 400; color: var(--muted); font-size: 13px; margin-left: 4px; }
+        .public-nav .back-link { color: var(--primary); text-decoration: none; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 5px; }
+
+        .wrap { max-width: 760px; margin: 0 auto; padding: 28px 20px 60px; }
+
+        .hero { text-align: center; margin-bottom: 22px; }
+        .hero h1 { font-size: 28px; font-weight: 700; color: var(--dark); letter-spacing: -0.4px; margin-bottom: 8px; }
+        .hero p { color: var(--gray); font-size: 14px; max-width: 520px; margin: 0 auto; line-height: 1.5; }
+
+        .step-pills {
+            display: flex; justify-content: center; gap: 8px;
+            margin-bottom: 22px; flex-wrap: wrap;
+        }
+        .step-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 14px; border-radius: 20px;
+            background: #fff; border: 1px solid var(--border);
+            font-size: 12px; font-weight: 500; color: var(--gray);
+        }
+        .step-pill.active {
+            background: var(--primary); color: #fff; border-color: var(--primary);
+        }
+        .step-pill .pill-num {
+            width: 18px; height: 18px; border-radius: 50%;
+            background: #f1f3f4; color: var(--gray);
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 10px; font-weight: 700;
+        }
+        .step-pill.active .pill-num { background: rgba(255,255,255,0.25); color: #fff; }
+
+        .info-banner {
+            background: #eaf1fb; border: 1px solid #c3d6f0;
+            color: #1c4e8e; padding: 12px 16px;
+            border-radius: var(--radius-sm); font-size: 13px;
+            display: flex; align-items: flex-start; gap: 10px;
+            margin-bottom: 20px; line-height: 1.5;
+        }
+        .info-banner i { margin-top: 2px; }
+
+        .card {
+            background: #fff; border-radius: var(--radius);
+            box-shadow: var(--shadow); padding: 22px;
+            margin-bottom: 18px;
+        }
+        .card h2 {
+            font-size: 16px; font-weight: 600; color: var(--dark);
+            margin-bottom: 6px; display: flex; align-items: center; gap: 8px;
+        }
+        .card h2 i { color: var(--primary); }
+        .card .card-sub { font-size: 13px; color: var(--muted); margin-bottom: 16px; line-height: 1.5; }
+
+        /* Camera area */
+        .camera-stage {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            background: #0b0d10;
+            border-radius: var(--radius);
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+        #cameraPreview {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        #cameraPreview.mirrored { transform: scaleX(-1); }
+
+        .stage-overlay {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            pointer-events: none;
+        }
+        .finger-guide {
+            width: 55%; aspect-ratio: 1 / 1.6;
+            max-width: 180px;
+            border: 3px dashed rgba(255,255,255,0.55);
+            border-radius: 40% 40% 40% 40% / 30% 30% 30% 30%;
+            position: relative;
+            display: flex; align-items: center; justify-content: center;
+            animation: pulseGuide 2.5s ease-in-out infinite;
+        }
+        @keyframes pulseGuide {
+            0%, 100% { border-color: rgba(255,255,255,0.55); }
+            50% { border-color: rgba(26,115,232,0.85); }
+        }
+        .finger-guide .finger-icon {
+            font-size: 50px; color: rgba(255,255,255,0.4);
+        }
+
+        .stage-hint {
+            position: absolute; bottom: 12px; left: 12px; right: 12px;
+            background: rgba(0,0,0,0.6); color: #fff;
+            padding: 8px 12px; border-radius: 8px;
+            font-size: 12px; text-align: center; line-height: 1.4;
+            backdrop-filter: blur(4px);
+        }
+
+        .stage-badge {
+            position: absolute; top: 12px; right: 12px;
+            padding: 5px 12px; border-radius: 20px;
+            font-size: 11px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.4px;
+            display: inline-flex; align-items: center; gap: 5px;
+            backdrop-filter: blur(4px);
+        }
+        .stage-badge.poor { background: rgba(217,48,37,0.85); color: #fff; }
+        .stage-badge.fair { background: rgba(224,116,0,0.85); color: #fff; }
+        .stage-badge.good { background: rgba(30,142,62,0.85); color: #fff; }
+        .stage-badge.excellent { background: rgba(26,115,232,0.9); color: #fff; }
+        .stage-badge.idle { background: rgba(95,99,104,0.85); color: #fff; }
+
+        /* Waveform */
+        .waveform-container {
+            width: 100%; height: 90px;
+            background: #0b0d10; border-radius: var(--radius-sm);
+            margin-bottom: 14px; position: relative;
+            overflow: hidden;
+        }
+        #pulseCanvas { width: 100%; height: 100%; display: block; }
+        .waveform-label {
+            position: absolute; top: 8px; left: 12px;
+            font-size: 10px; color: rgba(255,255,255,0.5);
+            text-transform: uppercase; letter-spacing: 0.8px;
+            font-weight: 600;
+        }
+        .waveform-bpm {
+            position: absolute; top: 6px; right: 12px;
+            font-size: 24px; font-weight: 700; color: #8ab4f8;
+            line-height: 1;
+        }
+        .waveform-bpm small { font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.5); margin-left: 3px; }
+
+        /* Live metrics */
+        .live-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .live-metric {
+            background: #fafbfc; border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 10px 12px; text-align: center;
+        }
+        .live-metric .lm-val {
+            font-size: 22px; font-weight: 700; color: var(--dark);
+            line-height: 1.1; font-variant-numeric: tabular-nums;
+        }
+        .live-metric .lm-lbl {
+            font-size: 10px; color: var(--muted);
+            text-transform: uppercase; letter-spacing: 0.5px;
+            margin-top: 4px; font-weight: 600;
+        }
+
+        .progress-wrap {
+            margin-bottom: 14px;
+        }
+        .progress-header {
+            display: flex; justify-content: space-between;
+            font-size: 12px; color: var(--gray); margin-bottom: 6px;
+        }
+        .progress-header strong { color: var(--primary); font-weight: 600; }
+        .progress-bar {
+            width: 100%; height: 8px; background: #f1f3f4;
+            border-radius: 4px; overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%; background: linear-gradient(90deg, #1a73e8 0%, #34a853 100%);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 22px; border-radius: var(--radius-sm);
+            font-size: 14px; font-weight: 600; cursor: pointer;
+            border: none; font-family: inherit;
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            transition: background 0.15s ease, transform 0.05s ease;
+        }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-primary:active { transform: translateY(1px); }
+        .btn-primary:disabled { background: #b3c9ea; cursor: not-allowed; }
+        .btn-ghost { background: transparent; color: var(--gray); }
+        .btn-ghost:hover { background: #f1f3f4; color: var(--dark); }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-danger:hover { filter: brightness(0.95); }
+        .btn-block { width: 100%; }
+
+        .actions {
+            display: flex; gap: 10px; margin-top: 12px;
+            flex-wrap: wrap;
+        }
+        .actions .btn { flex: 1; min-width: 140px; }
+
+        /* Manual entry accordion */
+        .accordion {
+            border: 1px solid var(--border); border-radius: var(--radius-sm);
+            margin-bottom: 14px; background: #fff;
+        }
+        .accordion-header {
+            padding: 12px 16px; cursor: pointer;
+            display: flex; align-items: center; justify-content: space-between;
+            font-size: 13px; font-weight: 600; color: var(--gray);
+        }
+        .accordion-header:hover { background: #fafbfc; }
+        .accordion-header i.chev { transition: transform 0.2s ease; color: var(--muted); }
+        .accordion.open .accordion-header i.chev { transform: rotate(180deg); }
+        .accordion-body {
+            display: none;
+            padding: 0 16px 16px;
+            border-top: 1px solid #f1f3f4;
+        }
+        .accordion.open .accordion-body { display: block; }
+
+        .form-row {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px; margin-top: 12px;
+        }
+        .form-group label {
+            display: block; font-size: 11px; font-weight: 600;
+            color: var(--gray); text-transform: uppercase;
+            letter-spacing: 0.4px; margin-bottom: 5px;
+        }
+        .form-group input, .form-group select {
+            width: 100%; padding: 9px 12px;
+            border: 1px solid var(--border); border-radius: var(--radius-sm);
+            font-size: 14px; font-family: inherit;
+            background: #fff; color: var(--text);
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none; border-color: var(--primary);
+        }
+
+        .bluetooth-row {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 14px; background: var(--primary-light);
+            border-radius: var(--radius-sm); font-size: 13px;
+            color: #1557b0; margin-top: 12px;
+        }
+        .bluetooth-row button {
+            background: #fff; border: 1px solid #c3d6f0;
+            padding: 6px 12px; border-radius: 6px;
+            font-size: 12px; font-weight: 600; color: var(--primary);
+            cursor: pointer; font-family: inherit;
+        }
+        .bluetooth-row button:hover { background: #f1f6fd; }
+
+        /* Result panel */
+        .result-panel {
+            display: none;
+            background: #fff; border-radius: var(--radius);
+            box-shadow: var(--shadow); overflow: hidden;
+            margin-bottom: 18px;
+            animation: fadeUp 0.35s ease;
+        }
+        .result-panel.show { display: block; }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .result-head {
+            padding: 22px 24px; color: #fff;
+            display: flex; align-items: center; gap: 16px;
+        }
+        .result-head.level-normal { background: linear-gradient(135deg, #1e8e3e 0%, #137333 100%); }
+        .result-head.level-low { background: linear-gradient(135deg, #1a73e8 0%, #1557b0 100%); }
+        .result-head.level-elevated { background: linear-gradient(135deg, #e37400 0%, #b06000 100%); }
+        .result-head.level-high { background: linear-gradient(135deg, #d93025 0%, #a5261f 100%); }
+        .result-head.level-critical { background: linear-gradient(135deg, #8e0000 0%, #5c0000 100%); }
+        .result-head .r-icon { font-size: 40px; flex-shrink: 0; }
+        .result-head .r-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+        .result-head .r-sub { font-size: 13px; opacity: 0.92; line-height: 1.4; }
+        .result-body { padding: 20px 24px; }
+        .result-breakdown { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+        .bd-row {
+            display: flex; align-items: center; gap: 14px;
+            padding: 12px 14px; border-radius: var(--radius-sm);
+            background: #fafbfc; border-left: 4px solid var(--border);
+        }
+        .bd-row.level-normal { border-left-color: var(--success); background: #fbfffc; }
+        .bd-row.level-low { border-left-color: var(--primary); background: #f8fbff; }
+        .bd-row.level-elevated { border-left-color: var(--warning); background: #fffdf5; }
+        .bd-row.level-high { border-left-color: var(--danger); background: #fff9f8; }
+        .bd-row.level-critical { border-left-color: #8e0000; background: #fff5f5; }
+        .bd-row .bd-val {
+            font-size: 22px; font-weight: 700; color: var(--dark);
+            min-width: 76px; text-align: center; line-height: 1;
+        }
+        .bd-row .bd-val small {
+            display: block; font-size: 10px; font-weight: 500;
+            color: var(--muted); text-transform: uppercase;
+            margin-top: 4px; letter-spacing: 0.4px;
+        }
+        .bd-row .bd-info { flex: 1; min-width: 0; }
+        .bd-row .bd-label {
+            font-size: 14px; font-weight: 600; color: var(--dark);
+            margin-bottom: 3px;
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+        }
+        .bd-row .bd-tag {
+            font-size: 10px; padding: 2px 8px;
+            border-radius: 10px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.3px;
+        }
+        .bd-tag.normal { background: var(--success-bg); color: var(--success); }
+        .bd-tag.low { background: var(--primary-light); color: var(--primary); }
+        .bd-tag.elevated { background: var(--warning-bg); color: var(--warning); }
+        .bd-tag.high, .bd-tag.critical { background: var(--danger-bg); color: var(--danger); }
+        .bd-row .bd-advice { font-size: 12px; color: var(--gray); line-height: 1.4; }
+
+        .result-actions {
+            padding: 14px 24px 20px;
+            display: flex; gap: 10px; flex-wrap: wrap;
+            border-top: 1px solid #f1f3f4; background: #fafbfc;
+        }
+        .result-actions .btn { flex: 1; min-width: 140px; }
+
+        .toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            padding: 12px 20px; border-radius: var(--radius-sm);
+            color: #fff; font-weight: 500; font-size: 14px;
+            z-index: 9999; box-shadow: var(--shadow);
+            animation: slideUp 0.3s ease;
+            max-width: 90vw;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        .calibrate-notice {
+            display: flex; gap: 10px; align-items: flex-start;
+            padding: 10px 12px; background: var(--warning-bg);
+            border: 1px solid #f9d67b; border-radius: var(--radius-sm);
+            font-size: 12px; color: #7a4a00; line-height: 1.5;
+            margin-top: 12px;
+        }
+        .calibrate-notice i { margin-top: 2px; }
+
+        .footer {
+            text-align: center; color: var(--muted); font-size: 12px;
+            margin-top: 30px; line-height: 1.6;
+        }
+        .footer a { color: var(--primary); text-decoration: none; }
+
+        @media (max-width: 640px) {
+            .wrap { padding: 18px 14px 40px; }
+            .hero h1 { font-size: 22px; }
+            .hero p { font-size: 13px; }
+            .card { padding: 16px; }
+            .live-metrics { grid-template-columns: 1fr 1fr; }
+            .actions .btn { min-width: 0; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="public-nav">
+        <a href="/" class="brand">
+            <i class="fas fa-heartbeat"></i>
+            <span>MediCare <small>Pro</small></span>
+        </a>
+        <a href="/" class="back-link"><i class="fas fa-arrow-left"></i> Home</a>
+    </nav>
+
+    <div class="wrap">
+        <div class="hero">
+            <h1>Instant Vitals Scan</h1>
+            <p>Place your fingertip on the rear camera lens and hold still. We'll automatically measure your heart rate, HRV, and breathing rate — no typing required.</p>
+        </div>
+
+        <div class="step-pills">
+            <div class="step-pill active" id="pill1"><span class="pill-num">1</span> Allow camera</div>
+            <div class="step-pill" id="pill2"><span class="pill-num">2</span> Place finger</div>
+            <div class="step-pill" id="pill3"><span class="pill-num">3</span> Hold still 30s</div>
+            <div class="step-pill" id="pill4"><span class="pill-num">4</span> Result</div>
+        </div>
+
+        <div class="info-banner">
+            <i class="fas fa-info-circle"></i>
+            <div>
+                <strong>How it works:</strong> Your phone's camera detects small color changes in your fingertip as blood pulses through it. We analyze that signal to compute your heart rate, HRV, and breathing rate. Blood pressure can be <em>estimated</em> once you provide one real cuff reading for calibration.
+            </div>
+        </div>
+
+        <!-- Step 1: Camera -->
+        <div class="card" id="cameraCard">
+            <h2><i class="fas fa-camera"></i> Step 1 — Camera access</h2>
+            <p class="card-sub">We need access to your rear camera and flashlight. Nothing is uploaded until you tap "Analyze".</p>
+            <div class="camera-stage">
+                <video id="cameraPreview" playsinline autoplay muted></video>
+                <div class="stage-overlay">
+                    <div class="finger-guide" id="fingerGuide" style="display:none;">
+                        <i class="fas fa-fingerprint finger-icon"></i>
+                    </div>
+                </div>
+                <div class="stage-hint" id="stageHint">Tap below to enable your camera.</div>
+                <div class="stage-badge idle" id="stageBadge">Idle</div>
+            </div>
+            <div class="actions">
+                <button class="btn btn-primary btn-block" id="startCameraBtn">
+                    <i class="fas fa-video"></i> Enable Camera
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 2: Measure -->
+        <div class="card" id="measureCard" style="display:none;">
+            <h2><i class="fas fa-fingerprint"></i> Step 2 — Place your finger</h2>
+            <p class="card-sub">Cover the camera lens (and the flash, if it's on the same side) with your fingertip. Press lightly. Don't move.</p>
+
+            <div class="waveform-container">
+                <canvas id="pulseCanvas"></canvas>
+                <div class="waveform-label">Live pulse signal</div>
+                <div class="waveform-bpm" id="liveBPM">—<small>bpm</small></div>
+            </div>
+
+            <div class="live-metrics">
+                <div class="live-metric">
+                    <div class="lm-val" id="metricHR">—</div>
+                    <div class="lm-lbl">Heart Rate</div>
+                </div>
+                <div class="live-metric">
+                    <div class="lm-val" id="metricHRV">—</div>
+                    <div class="lm-lbl">HRV (RMSSD)</div>
+                </div>
+                <div class="live-metric">
+                    <div class="lm-val" id="metricRR">—</div>
+                    <div class="lm-lbl">Resp. Rate</div>
+                </div>
+            </div>
+
+            <div class="progress-wrap">
+                <div class="progress-header">
+                    <span>Signal quality</span>
+                    <strong id="progressPct">0%</strong>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="btn btn-ghost" id="resetBtn"><i class="fas fa-rotate"></i> Reset</button>
+                <button class="btn btn-primary" id="analyzeBtn" disabled><i class="fas fa-heart-pulse"></i> Analyze & Save</button>
+            </div>
+
+            <div class="calibrate-notice" id="calibrateNotice" style="display:none;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div id="calibrateText"></div>
+            </div>
+        </div>
+
+        <!-- Optional sensor / manual -->
+        <div class="accordion" id="extraAccordion">
+            <div class="accordion-header" id="extraToggle">
+                <span><i class="fas fa-plus-circle" style="color: var(--primary); margin-right: 6px;"></i> Add SpO₂, temperature, or BP (optional)</span>
+                <i class="fas fa-chevron-down chev"></i>
+            </div>
+            <div class="accordion-body">
+                <div class="bluetooth-row">
+                    <i class="fas fa-bluetooth-b" style="font-size: 18px;"></i>
+                    <div style="flex: 1;">Have a Bluetooth pulse oximeter?</div>
+                    <button id="btConnectBtn" type="button">Connect</button>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>SpO₂ (%)</label>
+                        <input type="number" id="inSpo2" placeholder="e.g., 98" min="0" max="100">
+                    </div>
+                    <div class="form-group">
+                        <label>Temperature (°C)</label>
+                        <input type="number" id="inTemperature" placeholder="e.g., 36.8" step="0.1" min="20" max="45">
+                    </div>
+                    <div class="form-group">
+                        <label>Blood Glucose (mg/dL)</label>
+                        <input type="number" id="inGlucose" placeholder="e.g., 95" min="0" max="1000">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Age range</label>
+                        <select id="inAgeRange">
+                            <option value="">Prefer not to say</option>
+                            <option value="Under 18">Under 18</option>
+                            <option value="18-30">18 – 30</option>
+                            <option value="31-45">31 – 45</option>
+                            <option value="46-60">46 – 60</option>
+                            <option value="60+">60+</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Gender</label>
+                        <select id="inGender">
+                            <option value="">Prefer not to say</option>
+                            <option value="Female">Female</option>
+                            <option value="Male">Male</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Display name</label>
+                        <input type="text" id="inDisplayName" placeholder="Optional" maxlength="40">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BP calibration (only shown when the user opts in) -->
+        <div class="accordion" id="calibAccordion">
+            <div class="accordion-header" id="calibToggle">
+                <span><i class="fas fa-gauge-high" style="color: var(--primary); margin-right: 6px;"></i> Calibrate for Blood Pressure estimate (optional)</span>
+                <i class="fas fa-chevron-down chev"></i>
+            </div>
+            <div class="accordion-body">
+                <p style="font-size: 12px; color: var(--gray); line-height: 1.5; margin-top: 10px;">
+                    Enter one real blood-pressure reading from a cuff to enable estimation on this device. We'll use the ratio to <em>estimate</em> subsequent readings. This is not a medical device.
+                </p>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Systolic (top)</label>
+                        <input type="number" id="calibSys" placeholder="e.g., 120" min="60" max="260">
+                    </div>
+                    <div class="form-group">
+                        <label>Diastolic (bottom)</label>
+                        <input type="number" id="calibDia" placeholder="e.g., 80" min="40" max="180">
+                    </div>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-primary btn-block" id="saveCalibBtn" type="button"><i class="fas fa-save"></i> Save Calibration</button>
+                </div>
+                <p style="font-size: 11px; color: var(--muted); margin-top: 8px; line-height: 1.5;" id="calibStatus"></p>
+            </div>
+        </div>
+
+        <!-- Result -->
+        <div class="result-panel" id="resultPanel"></div>
+
+        <div class="footer">
+            <p>Powered by <strong>MediCare Pro</strong> · General guidance only, not a substitute for professional medical advice.</p>
+        </div>
+    </div>
+
+<script>
+    // =============================================================
+    // CAMERA-BASED PULSE DETECTION
+    // Uses rear camera + torch. Extracts red-channel average from
+    // the video stream. Detects peaks to compute heart rate, HRV,
+    // and respiratory rate from amplitude modulation.
+    // =============================================================
+
+    const ANALYZE_API = '/api/public/vitals';
+    const CALIBRATION_API = '/api/public/vitals/calibration';
+
+    // ---------- STATE ----------
+    let stream = null;
+    let videoEl = null;
+    let canvasEl = null;
+    let pulseCanvas = null;
+    let audioCtx = null;
+
+    let frameProcessor = null;
+    let rafId = null;
+
+    let signalBuffer = [];         // red channel values over time (for waveform display)
+    let timestamps = [];           // performance.now() for each sample
+    let peakIndices = [];          // detected peak indices in signalBuffer
+    let rrIntervals = [];          // ms between consecutive peaks
+
+    let lastPeakTime = 0;
+    let lastPeakValue = 0;
+    let risingThresholdCrossed = false;
+
+    let measurementStart = 0;
+    let measurementDuration = 30000; // 30 seconds of good signal to analyze
+
+    let signalQuality = 0;           // 0-100
+    let currentBPM = 0;
+    let currentHRV = 0;
+    let currentRR = 0;
+
+    // ---------- SMOOTHING (moving average) ----------
+    const SMOOTH_WINDOW = 5; // samples
+
+    // ---------- CONSTANTS ----------
+    const MIN_BPM = 40;
+    const MAX_BPM = 200;
+    const MIN_PEAK_INTERVAL_MS = 60000 / MAX_BPM; // ~300ms
+    const MAX_PEAK_INTERVAL_MS = 60000 / MIN_BPM; // ~1500ms
+
+    // Simple 2nd-order Butterworth-ish bandpass by moving averages
+    function highPass(values, window = 20) {
+        const out = [];
+        for (let i = 0; i < values.length; i++) {
+            let sum = 0, n = 0;
+            for (let j = Math.max(0, i - window); j <= i; j++) { sum += values[j]; n++; }
+            out.push(values[i] - sum / n);
+        }
+        return out;
+    }
+    function lowPass(values, window = 4) {
+        const out = [];
+        for (let i = 0; i < values.length; i++) {
+            let sum = 0, n = 0;
+            for (let j = Math.max(0, i - window); j <= i; j++) { sum += values[j]; n++; }
+            out.push(sum / n);
+        }
+        return out;
+    }
+
+    // ---------- UI HELPERS ----------
+    function showToast(msg, color = '#1a73e8', duration = 3000) {
+        const existing = document.querySelector('.toast');
+        if (existing) existing.remove();
+        const t = document.createElement('div');
+        t.className = 'toast';
+        t.style.background = color;
+        t.textContent = msg;
+        document.body.appendChild(t);
+        setTimeout(() => {
+            t.style.opacity = '0';
+            t.style.transition = 'opacity 0.3s ease';
+            setTimeout(() => t.remove(), 300);
+        }, duration);
+    }
+
+    function setStageBadge(level, text) {
+        const el = document.getElementById('stageBadge');
+        el.className = `stage-badge ${level}`;
+        el.textContent = text;
+    }
+
+    function setStep(index) {
+        for (let i = 1; i <= 4; i++) {
+            const el = document.getElementById(`pill${i}`);
+            if (el) el.classList.toggle('active', i <= index);
+        }
+    }
+
+    // ---------- CAMERA ----------
+    async function startCamera() {
+        const btn = document.getElementById('startCameraBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Requesting camera...';
+
+        try {
+            // Prefer the environment (rear) camera
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: { ideal: 'environment' },
+                    width: { ideal: 640 },
+                    height: { ideal: 480 },
+                    frameRate: { ideal: 30 }
+                },
+                audio: false
+            });
+
+            videoEl = document.getElementById('cameraPreview');
+            videoEl.srcObject = stream;
+            await videoEl.play();
+
+            // Try to turn on torch (flashlight) if supported
+            const track = stream.getVideoTracks()[0];
+            const capabilities = track.getCapabilities ? track.getCapabilities() : {};
+            if (capabilities.torch) {
+                try {
+                    await track.applyConstraints({ advanced: [{ torch: true }] });
+                    console.log('Torch enabled');
+                } catch (e) { console.warn('Torch enable failed', e); }
+            } else {
+                console.log('Torch not available on this device');
+            }
+
+            // Success
+            document.getElementById('fingerGuide').style.display = 'flex';
+            document.getElementById('measureCard').style.display = 'block';
+            document.getElementById('stageHint').textContent = 'Place your fingertip over the lens + flash. Hold still.';
+            setStageBadge('fair', 'Waiting for finger');
+            setStep(2);
+
+            // Auto-start the measurement loop
+            setTimeout(startMeasurementLoop, 300);
+
+            // Scroll to the measure card
+            document.getElementById('measureCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            btn.innerHTML = '<i class="fas fa-check"></i> Camera ready';
+        } catch (error) {
+            console.error('Camera error:', error);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-video"></i> Enable Camera';
+            showToast('Camera access denied or unavailable', '#d93025');
+        }
+    }
+
+    // ---------- SAMPLE EXTRACTION ----------
+    // Draws the current video frame to an offscreen canvas, reads the average
+    // red channel of the central region, and returns it.
+    let sampleCanvas = null;
+    let sampleCtx = null;
+
+    function initSampleCanvas(w, h) {
+        if (!sampleCanvas) {
+            sampleCanvas = document.createElement('canvas');
+            sampleCtx = sampleCanvas.getContext('2d', { willReadFrequently: true });
+        }
+        sampleCanvas.width = w;
+        sampleCanvas.height = h;
+    }
+
+    function extractRedAverage() {
+        if (!videoEl || videoEl.readyState < 2) return null;
+        const w = 80, h = 60; // downscale for speed
+        initSampleCanvas(w, h);
+        // Central region only
+        const vw = videoEl.videoWidth || 640;
+        const vh = videoEl.videoHeight || 480;
+        const sx = (vw - vw * 0.5) / 2;
+        const sy = (vh - vh * 0.5) / 2;
+        sampleCtx.drawImage(videoEl, sx, sy, vw * 0.5, vh * 0.5, 0, 0, w, h);
+        const data = sampleCtx.getImageData(0, 0, w, h).data;
+        let rSum = 0;
+        for (let i = 0; i < data.length; i += 4) rSum += data[i];
+        return rSum / (data.length / 4);
+    }
+
+    // ---------- MEASUREMENT LOOP ----------
+    function startMeasurementLoop() {
+        measurementStart = performance.now();
+        signalBuffer = [];
+        timestamps = [];
+        peakIndices = [];
+        rrIntervals = [];
+        lastPeakTime = 0;
+
+        pulseCanvas = document.getElementById('pulseCanvas');
+        resizePulseCanvas();
+
+        rafId = requestAnimationFrame(loop);
+    }
+
+    function resizePulseCanvas() {
+        if (!pulseCanvas) return;
+        const rect = pulseCanvas.getBoundingClientRect();
+        pulseCanvas.width = rect.width * devicePixelRatio;
+        pulseCanvas.height = rect.height * devicePixelRatio;
+    }
+
+    let lastSampleTime = 0;
+    const SAMPLE_INTERVAL_MS = 33; // ~30 fps
+
+    function loop(now) {
+        rafId = requestAnimationFrame(loop);
+
+        // Throttle sampling
+        if (now - lastSampleTime < SAMPLE_INTERVAL_MS) return;
+        lastSampleTime = now;
+
+        const red = extractRedAverage();
+        if (red === null) return;
+
+        signalBuffer.push(red);
+        timestamps.push(now);
+
+        // Keep a rolling window (~10s at 30fps)
+        const WINDOW = 300;
+        if (signalBuffer.length > WINDOW) {
+            signalBuffer.shift();
+            timestamps.shift();
+        }
+
+        // Process every sample after a minimum count
+        if (signalBuffer.length >= 60) {
+            processSignal();
+        }
+
+        drawWaveform();
+
+        // Update UI counts
+        updateLiveMetrics();
+        updateSignalQuality();
+
+        // Auto-analyze after 30 seconds
+        if (now - measurementStart > measurementDuration && currentBPM > 0) {
+            stopLoopAndEnableAnalyze();
+        }
+    }
+
+    function stopLoopAndEnableAnalyze() {
+        if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+        document.getElementById('analyzeBtn').disabled = false;
+        document.getElementById('stageHint').textContent = 'Measurement complete. Tap "Analyze & Save".';
+        setStageBadge('excellent', 'Ready');
+        setStep(3);
+    }
+
+    // ---------- SIGNAL PROCESSING ----------
+    function processSignal() {
+        // 1) High-pass to remove DC + slow drift
+        const hp = highPass(signalBuffer, 20);
+        // 2) Low-pass to remove high-freq noise
+        const filtered = lowPass(hp, 4);
+
+        // 3) Adaptive threshold: mean + a fraction of stddev
+        const mean = filtered.reduce((a, b) => a + b, 0) / filtered.length;
+        const variance = filtered.reduce((a, b) => a + (b - mean) ** 2, 0) / filtered.length;
+        const std = Math.sqrt(variance);
+        const threshold = mean + std * 0.4;
+
+        // 4) Peak detection with a minimum interval
+        const now = performance.now();
+        const n = filtered.length;
+        const lastIdx = n - 2;
+        if (lastIdx < 3) return;
+
+        const curr = filtered[lastIdx];
+        const prev = filtered[lastIdx - 1];
+        const prev2 = filtered[lastIdx - 2];
+
+        const isLocalMax = curr > prev && prev > prev2;
+        const aboveThreshold = curr > threshold;
+
+        if (isLocalMax && aboveThreshold) {
+            const peakTime = timestamps[lastIdx] || now;
+            const interval = peakTime - lastPeakTime;
+            if (lastPeakTime && interval >= MIN_PEAK_INTERVAL_MS && interval <= MAX_PEAK_INTERVAL_MS) {
+                rrIntervals.push(interval);
+                if (rrIntervals.length > 60) rrIntervals.shift(); // keep last 60
+                peakIndices.push(lastIdx);
+                if (peakIndices.length > 30) peakIndices.shift();
+            }
+            lastPeakTime = peakTime;
+        }
+
+        // 5) Compute BPM from RR intervals (median is robust)
+        if (rrIntervals.length >= 4) {
+            const sorted = [...rrIntervals].sort((a, b) => a - b);
+            const median = sorted[Math.floor(sorted.length / 2)];
+            let bpm = 60000 / median;
+            if (bpm >= MIN_BPM && bpm <= MAX_BPM) currentBPM = bpm;
+
+            // HRV (RMSSD): root-mean-square of successive differences
+            let sumSq = 0;
+            for (let i = 1; i < rrIntervals.length; i++) {
+                const d = rrIntervals[i] - rrIntervals[i - 1];
+                sumSq += d * d;
+            }
+            const rmssd = Math.sqrt(sumSq / (rrIntervals.length - 1));
+            if (isFinite(rmssd) && rmssd > 0) currentHRV = rmssd;
+
+            // Respiratory rate: derive from slow modulation of RR series
+            if (rrIntervals.length >= 15) {
+                // Detrend
+                const windowSize = 9;
+                const smoothed = [];
+                for (let i = 0; i < rrIntervals.length; i++) {
+                    let s = 0, c = 0;
+                    for (let j = Math.max(0, i - windowSize); j <= Math.min(rrIntervals.length - 1, i + windowSize); j++) {
+                        s += rrIntervals[j]; c++;
+                    }
+                    smoothed.push(rrIntervals[i] - s / c);
+                }
+                // Count zero crossings of the detrended series → 2 crossings per breath
+                let crossings = 0;
+                for (let i = 1; i < smoothed.length; i++) {
+                    if ((smoothed[i - 1] < 0 && smoothed[i] >= 0) || (smoothed[i - 1] >= 0 && smoothed[i] < 0)) {
+                        crossings++;
+                    }
+                }
+                const breathCount = crossings / 2;
+                const durationMin = (rrIntervals.reduce((a, b) => a + b, 0) / 1000) / 60;
+                if (durationMin > 0) {
+                    const rr = breathCount / durationMin;
+                    if (rr >= 6 && rr <= 40) currentRR = rr;
+                }
+            }
+        }
+    }
+
+    // ---------- WAVEFORM RENDERING ----------
+    function drawWaveform() {
+        if (!pulseCanvas) return;
+        const ctx = pulseCanvas.getContext('2d');
+        const w = pulseCanvas.width;
+        const h = pulseCanvas.height;
+        ctx.clearRect(0, 0, w, h);
+
+        // Grid
+        ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < w; i += w / 8) {
+            ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke();
+        }
+        for (let i = 0; i < h; i += h / 4) {
+            ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(w, i); ctx.stroke();
+        }
+
+        if (signalBuffer.length < 5) return;
+
+        // Compute min/max of last ~250 samples
+        const view = signalBuffer.slice(-250);
+        const min = Math.min(...view);
+        const max = Math.max(...view);
+        const range = max - min || 1;
+
+        // Draw line
+        ctx.strokeStyle = '#8ab4f8';
+        ctx.lineWidth = 2;
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        for (let i = 0; i < view.length; i++) {
+            const x = (i / (view.length - 1)) * w;
+            const y = h - ((view[i] - min) / range) * (h - 16) - 8;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        // Highlight peaks
+        ctx.fillStyle = '#34a853';
+        for (const idx of peakIndices) {
+            const viewIdx = idx - (signalBuffer.length - view.length);
+            if (viewIdx < 0 || viewIdx >= view.length) continue;
+            const x = (viewIdx / (view.length - 1)) * w;
+            const y = h - ((view[viewIdx] - min) / range) * (h - 16) - 8;
+            ctx.beginPath();
+            ctx.arc(x, y, 4, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    // ---------- LIVE METRICS ----------
+    function updateLiveMetrics() {
+        const hr = document.getElementById('metricHR');
+        const hrvEl = document.getElementById('metricHRV');
+        const rrEl = document.getElementById('metricRR');
+        const live = document.getElementById('liveBPM');
+
+        if (currentBPM > 0) {
+            const bpmStr = Math.round(currentBPM);
+            hr.textContent = bpmStr;
+            live.innerHTML = `${bpmStr}<small>bpm</small>`;
+        } else {
+            hr.textContent = '—';
+            live.innerHTML = '—<small>bpm</small>';
+        }
+
+        hrvEl.textContent = currentHRV > 0 ? Math.round(currentHRV) + ' ms' : '—';
+        rrEl.textContent = currentRR > 0 ? currentRR.toFixed(1) + ' /min' : '—';
+    }
+
+    function updateSignalQuality() {
+        // Quality heuristics:
+        // - More good peaks = better
+        // - Signal variance should be meaningful but not wild
+        let q = 0;
+        if (signalBuffer.length >= 30) q += 20;
+        if (signalBuffer.length >= 60) q += 20;
+        if (rrIntervals.length >= 4) q += 20;
+        if (rrIntervals.length >= 8) q += 20;
+        if (rrIntervals.length >= 15) q += 20;
+
+        // Consistency of RR intervals (low std = high quality)
+        if (rrIntervals.length >= 5) {
+            const mean = rrIntervals.reduce((a, b) => a + b, 0) / rrIntervals.length;
+            const std = Math.sqrt(rrIntervals.reduce((a, b) => a + (b - mean) ** 2, 0) / rrIntervals.length);
+            const cv = std / mean;
+            if (cv < 0.15) q = Math.min(100, q + 10);
+            if (cv > 0.4) q = Math.max(0, q - 15);
+        }
+
+        signalQuality = Math.min(100, q);
+
+        document.getElementById('progressPct').textContent = signalQuality + '%';
+        document.getElementById('progressFill').style.width = signalQuality + '%';
+
+        let badge, text;
+        if (signalQuality >= 80) { badge = 'excellent'; text = 'Excellent signal'; }
+        else if (signalQuality >= 55) { badge = 'good'; text = 'Good signal'; }
+        else if (signalQuality >= 30) { badge = 'fair'; text = 'Fair — hold still'; }
+        else { badge = 'poor'; text = 'Place finger firmly'; }
+        setStageBadge(badge, text);
+
+        // Enable analyze button when quality is good enough
+        if (signalQuality >= 55 && currentBPM > 0) {
+            document.getElementById('analyzeBtn').disabled = false;
+        }
+    }
+
+    // ---------- DEVICE UUID ----------
+    function getDeviceId() {
+        let id = localStorage.getItem('medicare_device_id');
+        if (!id) {
+            id = 'dev_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+            localStorage.setItem('medicare_device_id', id);
+        }
+        return id;
+    }
+
+    // ---------- BP CALIBRATION ----------
+    let calibration = null;
+
+    async function loadCalibration() {
+        try {
+            const resp = await fetch(`${CALIBRATION_API}/${getDeviceId()}`);
+            if (resp.ok) {
+                const j = await resp.json();
+                calibration = j.data;
+                document.getElementById('calibSys').value = calibration.systolic || '';
+                document.getElementById('calibDia').value = calibration.diastolic || '';
+                document.getElementById('calibStatus').textContent =
+                    `✓ Calibrated on ${new Date(calibration.calibrationDate).toLocaleDateString()}. BP will be estimated from pulse waveform.`;
+            } else {
+                document.getElementById('calibStatus').textContent =
+                    'Not calibrated. BP estimation will be skipped until you enter a real cuff reading.';
+            }
+        } catch (e) {
+            console.error('Load calibration error:', e);
+        }
+    }
+
+    async function saveCalibration() {
+        const sys = parseInt(document.getElementById('calibSys').value);
+        const dia = parseInt(document.getElementById('calibDia').value);
+        if (!sys || !dia) { showToast('Enter both systolic and diastolic', '#b06000'); return; }
+        if (sys < 60 || sys > 260 || dia < 40 || dia > 180) { showToast('Values seem out of range', '#b06000'); return; }
+        try {
+            const resp = await fetch(CALIBRATION_API, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    deviceId: getDeviceId(),
+                    systolic: sys,
+                    diastolic: dia,
+                    pulseAtCalibration: currentBPM > 0 ? Math.round(currentBPM) : null
+                })
+            });
+            const j = await resp.json();
+            if (!resp.ok) throw new Error(j.message);
+            calibration = j.data;
+            showToast('Calibration saved', '#1e8e3e');
+            document.getElementById('calibStatus').textContent =
+                `✓ Calibrated on ${new Date(calibration.calibrationDate).toLocaleDateString()}.`;
+        } catch (e) {
+            showToast('Failed to save calibration', '#d93025');
+        }
+    }
+
+    // Naive BP estimation from pulse waveform + calibration
+    // Formula: use an "augmentation index" style ratio from the waveform,
+    // then shift by the calibration offset. This is a crude heuristic.
+    function estimateBP(bpm, hrv) {
+        if (!calibration || !bpm) return null;
+
+        // Baseline relationship: higher HR → slightly higher systolic
+        const hrDelta = bpm - (calibration.pulseAtCalibration || bpm);
+        const sysEstimate = calibration.systolic + Math.round(hrDelta * 0.4);
+        const diaEstimate = calibration.diastolic + Math.round(hrDelta * 0.2);
+
+        return {
+            systolic: Math.max(60, Math.min(260, sysEstimate)),
+            diastolic: Math.max(40, Math.min(180, diaEstimate))
+        };
+    }
+
+    // ---------- ANALYZE & SAVE ----------
+    async function analyzeAndSave() {
+        const btn = document.getElementById('analyzeBtn');
+        btn.disabled = true;
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+
+        const heartRate = Math.round(currentBPM);
+        const hrv = Math.round(currentHRV);
+        const rr = currentRR > 0 ? parseFloat(currentRR.toFixed(1)) : null;
+
+        const spo2 = document.getElementById('inSpo2').value ? Number(document.getElementById('inSpo2').value) : null;
+        const temperature = document.getElementById('inTemperature').value ? Number(document.getElementById('inTemperature').value) : null;
+        const bloodGlucose = document.getElementById('inGlucose').value ? Number(document.getElementById('inGlucose').value) : null;
+
+        const bpEstimate = estimateBP(heartRate, hrv);
+
+        const payload = {
+            displayName: document.getElementById('inDisplayName').value || 'Self-scan',
+            ageRange: document.getElementById('inAgeRange').value || '',
+            gender: document.getElementById('inGender').value || '',
+            heartRate,
+            hrv,
+            respiratoryRate: rr,
+            spo2,
+            temperature,
+            bloodGlucose,
+            systolic: bpEstimate ? bpEstimate.systolic : null,
+            diastolic: bpEstimate ? bpEstimate.diastolic : null
+        };
+
+        try {
+            const resp = await fetch(ANALYZE_API, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const j = await resp.json();
+            if (!resp.ok) throw new Error(j.message || 'Failed to save');
+
+            renderResult(j.data, { heartRate, hrv, respiratoryRate: rr, spo2, temperature, bloodGlucose, bpEstimate });
+            setStep(4);
+
+            // Stop camera
+            stopCamera();
+        } catch (e) {
+            console.error(e);
+            showToast(e.message || 'Failed to analyze', '#d93025');
+            btn.disabled = false;
+            btn.innerHTML = orig;
+        }
+    }
+
+    function stopCamera() {
+        if (stream) {
+            stream.getTracks().forEach(t => t.stop());
+            stream = null;
+        }
+        if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    }
+
+    // ---------- RESULT ----------
+    function levelHeadline(level) {
+        switch (level) {
+            case 'normal': return { title: 'All looks normal', sub: 'Your readings are within healthy ranges.' };
+            case 'low': return { title: 'Some readings are low', sub: 'Keep an eye on these values.' };
+            case 'elevated': return { title: 'Some readings are elevated', sub: 'Monitor and consider rechecking after rest.' };
+            case 'high': return { title: 'One or more readings are high', sub: 'Consider consulting a healthcare professional.' };
+            case 'critical': return { title: 'Critical reading detected', sub: 'Please seek medical help immediately.' };
+            default: return { title: 'Result', sub: '' };
+        }
+    }
+    function levelIcon(level) {
+        switch (level) {
+            case 'normal': return 'fa-circle-check';
+            case 'low': return 'fa-circle-info';
+            case 'elevated': return 'fa-triangle-exclamation';
+            case 'high': return 'fa-triangle-exclamation';
+            case 'critical': return 'fa-circle-exclamation';
+            default: return 'fa-circle-info';
+        }
+    }
+    const VITAL_META = {
+        heartRate: { name: 'Heart Rate', unit: 'BPM' },
+        systolic: { name: 'Systolic BP', unit: 'mmHg' },
+        diastolic: { name: 'Diastolic BP', unit: 'mmHg' },
+        hrv: { name: 'HRV (RMSSD)', unit: 'ms' },
+        spo2: { name: 'SpO₂', unit: '%' },
+        temperature: { name: 'Temperature', unit: '°C' },
+        respiratoryRate: { name: 'Respiratory Rate', unit: '/min' },
+        bloodGlucose: { name: 'Blood Glucose', unit: 'mg/dL' }
+    };
+
+    function renderResult(analysis, extras) {
+        const panel = document.getElementById('resultPanel');
+        const head = levelHeadline(analysis.overallLevel);
+        const time = new Date().toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+        const keys = Object.keys(analysis.breakdown || {});
+        const breakdownHTML = keys.length === 0
+            ? `<div style="color: var(--muted); font-size: 13px;">No readings to display.</div>`
+            : keys.map(k => {
+                const item = analysis.breakdown[k];
+                const meta = VITAL_META[k] || { name: k, unit: '' };
+                return `
+                    <div class="bd-row level-${item.level}">
+                        <div class="bd-val">${item.value}<small>${meta.unit}</small></div>
+                        <div class="bd-info">
+                            <div class="bd-label">${meta.name} <span class="bd-tag ${item.level}">${item.label}</span></div>
+                            <div class="bd-advice">${item.advice || ''}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+        const flagsHTML = (analysis.flags && analysis.flags.length)
+            ? `<div style="background: #fff9f8; border: 1px solid #f4b6b0; border-radius: 8px; padding: 12px 14px; margin-bottom: 16px;">
+                    <div style="font-weight: 600; color: var(--danger); font-size: 13px; margin-bottom: 6px;">
+                        <i class="fas fa-bell"></i> Attention
+                    </div>
+                    <ul style="list-style: none; font-size: 13px; color: var(--gray); line-height: 1.6;">
+                        ${analysis.flags.map(f => `<li>• ${f}</li>`).join('')}
+                    </ul>
+               </div>`
+            : '';
+
+        const bpNote = extras.bpEstimate
+            ? `<div style="font-size:11px;color:var(--muted);margin-bottom:12px;padding:8px 12px;background:#f8f9fa;border-radius:6px;">
+                  <i class="fas fa-info-circle"></i> Blood pressure values shown are <strong>estimates</strong> derived from your calibration, not measurements.
+               </div>`
+            : '';
+
+        panel.innerHTML = `
+            <div class="result-head level-${analysis.overallLevel}">
+                <i class="fas ${levelIcon(analysis.overallLevel)} r-icon"></i>
+                <div style="flex:1;">
+                    <div class="r-title">${head.title}</div>
+                    <div class="r-sub">${head.sub}</div>
+                </div>
+                <div style="font-size:11px;opacity:.9;background:rgba(255,255,255,.18);padding:4px 10px;border-radius:12px;">${time}</div>
+            </div>
+            <div class="result-body">
+                ${flagsHTML}
+                ${bpNote}
+                <div class="result-breakdown">${breakdownHTML}</div>
+            </div>
+            <div class="result-actions">
+                <button class="btn btn-ghost" onclick="location.reload()"><i class="fas fa-rotate"></i> Check again</button>
+                <button class="btn btn-primary" onclick="window.print()"><i class="fas fa-print"></i> Print / Save PDF</button>
+            </div>
+        `;
+        panel.classList.add('show');
+        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ---------- BLUETOOTH SENSOR ----------
+    async function connectBluetoothSensor() {
+        if (!navigator.bluetooth) {
+            showToast('Bluetooth not supported in this browser', '#b06000');
+            return;
+        }
+        try {
+            const device = await navigator.bluetooth.requestDevice({
+                filters: [{ services: ['pulse_oximeter'] }, { services: ['health_thermometer'] }],
+                optionalServices: ['battery_service']
+            });
+            showToast(`Connected to ${device.name || 'device'}`, '#1e8e3e');
+
+            // Many pulse oximeters advertise via a custom service.
+            // Note: Specific UUIDs vary by manufacturer — we try the standard
+            // Health Thermometer service first, and pulse oximeter if available.
+            // For a production build, you'd map specific vendor UUIDs here.
+
+            // Health Thermometer (0x1809) — reads temperature
+            if (device.gatt) {
+                const server = await device.gatt.connect();
+                try {
+                    const htService = await server.getPrimaryService('health_thermometer');
+                    const htChar = await htService.getCharacteristic('temperature_measurement');
+                    htChar.addEventListener('characteristicvaluechanged', (ev) => {
+                        const v = ev.target.value;
+                        // IEEE-11073 32-bit float parsing
+                        const mantissa = v.getUint16(1, true);
+                        const exponent = v.getInt8(3);
+                        const temp = mantissa * Math.pow(10, exponent);
+                        if (temp > 20 && temp < 45) {
+                            document.getElementById('inTemperature').value = temp.toFixed(1);
+                        }
+                    });
+                    await htChar.startNotifications();
+                } catch (e) { console.log('No health thermometer service', e); }
+
+                try {
+                    const plxService = await server.getPrimaryService('pulse_oximeter');
+                    const plxChar = await plxService.getCharacteristic('plx_continuous_measurement');
+                    plxChar.addEventListener('characteristicvaluechanged', (ev) => {
+                        const v = ev.target.value;
+                        // PLX Continuous Measurement: flags(1), SpO2(2), PR(2)
+                        const spo2 = v.getUint16(1, true) & 0x01FF;
+                        const pr = v.getUint16(3, true) & 0x01FF;
+                        if (spo2 > 0 && spo2 <= 100) document.getElementById('inSpo2').value = spo2;
+                        // Pulse rate is already captured by camera; ignore here
+                    });
+                    await plxChar.startNotifications();
+                } catch (e) { console.log('No pulse oximeter service', e); }
+            }
+        } catch (e) {
+            console.error('BT error:', e);
+            showToast('Bluetooth connection cancelled', '#b06000');
+        }
+    }
+
+    // ---------- WIRE UP ----------
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('startCameraBtn').addEventListener('click', startCamera);
+        document.getElementById('analyzeBtn').addEventListener('click', analyzeAndSave);
+        document.getElementById('saveCalibBtn').addEventListener('click', saveCalibration);
+        document.getElementById('btConnectBtn').addEventListener('click', connectBluetoothSensor);
+
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            signalBuffer = []; timestamps = []; peakIndices = [];
+            rrIntervals = []; currentBPM = 0; currentHRV = 0; currentRR = 0;
+            signalQuality = 0;
+            measurementStart = performance.now();
+            updateLiveMetrics();
+            updateSignalQuality();
+            showToast('Reset — hold still', '#1a73e8');
+        });
+
+        // Accordions
+        ['extraAccordion', 'calibAccordion'].forEach(id => {
+            const acc = document.getElementById(id);
+            const header = acc.querySelector('.accordion-header');
+            header.addEventListener('click', () => acc.classList.toggle('open'));
+        });
+
+        // Window resize → redraw canvas
+        window.addEventListener('resize', () => {
+            if (pulseCanvas) resizePulseCanvas();
+        });
+
+        // Load calibration if any
+        loadCalibration();
+
+        // Show calibration notice inside the measure card
+        setTimeout(() => {
+            if (!calibration) {
+                document.getElementById('calibrateNotice').style.display = 'flex';
+                document.getElementById('calibrateText').innerHTML =
+                    'Blood pressure won\'t be shown because this device isn\'t calibrated. Open <strong>"Calibrate for Blood Pressure"</strong> below to enable it (one cuff reading is enough).';
+            }
+        }, 800);
+    });
+</script>
+</body>
+</html>

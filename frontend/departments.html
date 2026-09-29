@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>MediCare Pro | Department Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --primary-dark: #1557b0;
+            --primary-light: #e8f0fe;
+            --success: #1e8e3e;
+            --success-bg: #e6f4ea;
+            --warning: #b06000;
+            --warning-bg: #fef7e0;
+            --danger: #d93025;
+            --danger-bg: #fce8e6;
+            --purple: #7c3aed;
+            --teal: #0d9488;
+            --dark: #202124;
+            --text: #3c4043;
+            --gray: #5f6368;
+            --muted: #80868b;
+            --border: #dadce0;
+            --bg: #f5f6f8;
+            --sidebar-width: 250px;
+            --header-height: 64px;
+            --shadow-md: 0 1px 3px rgba(60, 64, 67, 0.15);
+            --shadow-lg: 0 4px 12px rgba(60, 64, 67, 0.15);
+            --radius: 8px;
+            --radius-sm: 6px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-size: 14px;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #c1c5c9; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a0a4a8; }
+
+        .app { display: flex; min-height: 100vh; }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: #1a2332;
+            color: #e8eaed;
+            height: 100vh;
+            position: fixed;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.25s ease;
+        }
+
+        .logo {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .logo i { font-size: 24px; margin-right: 10px; color: #8ab4f8; }
+        .logo h1 { font-size: 18px; font-weight: 600; letter-spacing: -0.2px; color: #fff; }
+        .logo h1 span { font-weight: 400; color: #9aa0a6; }
+
+        .nav-links { list-style: none; padding: 12px 8px; overflow-y: auto; flex: 1; }
+        .nav-links li { margin-bottom: 2px; }
+        .nav-links li a {
+            display: flex;
+            align-items: center;
+            color: #bdc1c6;
+            text-decoration: none;
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+        .nav-links li a:hover { background: rgba(255, 255, 255, 0.06); color: #fff; }
+        .nav-links li.active a { background: rgba(138, 180, 248, 0.15); color: #8ab4f8; }
+        .nav-links li a i { margin-right: 12px; font-size: 16px; width: 20px; text-align: center; }
+        .nav-links li:last-child {
+            margin-top: 16px; padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .main-panel { flex: 1; margin-left: var(--sidebar-width); min-width: 0; }
+
+        .top-bar {
+            height: var(--header-height);
+            background: #fff;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 24px;
+            position: sticky; top: 0; z-index: 99;
+            border-bottom: 1px solid var(--border);
+        }
+        .header-left { display: flex; align-items: center; gap: 16px; }
+        .menu-icon { display: none; font-size: 18px; cursor: pointer; color: var(--gray); padding: 6px; }
+        .header-right { display: flex; align-items: center; gap: 16px; }
+        .header-right .notification {
+            font-size: 16px; color: var(--gray); cursor: pointer;
+            position: relative; padding: 6px;
+        }
+        .header-right .notification:hover { color: var(--dark); }
+        .header-right .notification .badge {
+            position: absolute; top: 0; right: 0;
+            background: var(--danger); color: #fff; border-radius: 50%;
+            width: 16px; height: 16px; font-size: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 600;
+        }
+        .user-profile {
+            display: flex; align-items: center; gap: 10px;
+            cursor: pointer; padding: 4px 8px; border-radius: var(--radius-sm);
+        }
+        .user-profile:hover { background: var(--bg); }
+        .user-profile img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+        .user-profile .user-name { font-weight: 500; font-size: 13px; color: var(--dark); }
+        .user-profile .user-role { font-size: 11px; color: var(--muted); }
+
+        .content { padding: 24px; max-width: 1400px; margin: 0 auto; }
+
+        .page-header {
+            margin-bottom: 20px;
+            display: flex; justify-content: space-between; align-items: flex-start;
+            flex-wrap: wrap; gap: 12px;
+        }
+        .page-header h1 {
+            font-size: 22px; font-weight: 600; color: var(--dark);
+            letter-spacing: -0.2px;
+        }
+        .page-header h1 small {
+            font-size: 13px; font-weight: 400; color: var(--muted);
+            display: block; margin-top: 4px;
+        }
+        .header-actions { display: flex; gap: 8px; align-items: center; }
+
+        .btn-primary {
+            background: var(--primary); color: #fff; border: none;
+            padding: 9px 18px; border-radius: var(--radius-sm);
+            font-weight: 500; font-size: 13px; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 6px;
+            transition: background 0.15s ease;
+        }
+        .btn-primary:hover { background: var(--primary-dark); }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 12px; margin-bottom: 20px;
+        }
+        .stat-tile {
+            background: #fff; border-radius: var(--radius);
+            padding: 16px 18px; border: 1px solid var(--border);
+        }
+        .stat-tile .stat-number {
+            font-size: 22px; font-weight: 600; color: var(--dark);
+            line-height: 1.2;
+        }
+        .stat-tile .stat-label {
+            color: var(--muted); font-size: 12px; margin-top: 4px;
+        }
+
+        .filters-bar {
+            background: #fff; border-radius: var(--radius);
+            padding: 14px 18px; margin-bottom: 20px;
+            display: flex; flex-wrap: wrap; gap: 12px;
+            align-items: flex-end;
+            border: 1px solid var(--border);
+        }
+        .filter-group {
+            display: flex; flex-direction: column; gap: 5px;
+            min-width: 150px; flex: 1;
+        }
+        .filter-group label {
+            font-size: 11px; font-weight: 500; color: var(--muted);
+            text-transform: uppercase; letter-spacing: 0.4px;
+        }
+        .filter-group select,
+        .filter-group input {
+            padding: 8px 12px; border-radius: var(--radius-sm);
+            border: 1px solid var(--border); background: #fff;
+            font-size: 13px; color: var(--text); width: 100%;
+            font-family: inherit;
+        }
+        .filter-group select:focus,
+        .filter-group input:focus { outline: none; border-color: var(--primary); }
+
+        .real-time-search { position: relative; flex: 2; }
+        .real-time-search i {
+            position: absolute; left: 12px; bottom: 10px;
+            color: var(--muted); font-size: 13px;
+        }
+        .real-time-search input { padding-left: 34px; }
+
+        .filter-btn {
+            background: var(--primary); color: #fff; border: none;
+            padding: 8px 20px; border-radius: var(--radius-sm);
+            font-weight: 500; font-size: 13px; cursor: pointer;
+            display: flex; align-items: center; gap: 6px;
+            margin-top: 20px; white-space: nowrap;
+            font-family: inherit;
+        }
+        .filter-btn:hover { background: var(--primary-dark); }
+
+        .view-toggle {
+            display: inline-flex; border: 1px solid var(--border);
+            border-radius: var(--radius-sm); overflow: hidden;
+            margin-top: 20px;
+        }
+        .view-toggle button {
+            background: #fff; border: none; padding: 8px 12px;
+            cursor: pointer; color: var(--muted); font-size: 13px;
+            display: flex; align-items: center; gap: 5px;
+            font-family: inherit;
+        }
+        .view-toggle button.active {
+            background: var(--primary-light); color: var(--primary);
+        }
+        .view-toggle button:hover { background: var(--bg); }
+        .view-toggle button.active:hover { background: var(--primary-light); }
+
+        .departments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 16px;
+        }
+        .departments-grid.list-view { grid-template-columns: 1fr; }
+
+        .department-card {
+            background: #fff; border-radius: var(--radius);
+            border: 1px solid var(--border); overflow: hidden;
+            transition: box-shadow 0.15s ease;
+            display: flex; flex-direction: column;
+            position: relative;
+        }
+        .department-card:hover { box-shadow: var(--shadow-md); }
+
+        .department-card::before {
+            content: '';
+            position: absolute; left: 0; top: 0; bottom: 0;
+            width: 4px; background: var(--primary);
+        }
+        .department-card.accent-heart::before { background: #e53935; }
+        .department-card.accent-bone::before { background: #f9ab00; }
+        .department-card.accent-dots::before { background: #d81b60; }
+        .department-card.accent-baby::before { background: #00acc1; }
+        .department-card.accent-brain::before { background: #7c3aed; }
+        .department-card.accent-ambulance::before { background: #d93025; }
+        .department-card.accent-ribbon::before { background: #a142f4; }
+        .department-card.accent-xray::before { background: #5f6368; }
+        .department-card.accent-pills::before { background: #1e8e3e; }
+        .department-card.accent-syringe::before { background: #0d9488; }
+        .department-card.accent-hospital::before { background: var(--primary); }
+
+        .card-header {
+            padding: 16px 16px 14px 20px;
+            display: flex; gap: 12px; align-items: center;
+            border-bottom: 1px solid #f1f3f4;
+        }
+
+        .dept-icon {
+            width: 52px; height: 52px; border-radius: var(--radius);
+            background: var(--primary-light);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; color: var(--primary); flex-shrink: 0;
+        }
+        .department-card.accent-heart .dept-icon { background: #ffebee; color: #e53935; }
+        .department-card.accent-bone .dept-icon { background: #fff8e1; color: #f9ab00; }
+        .department-card.accent-dots .dept-icon { background: #fce4ec; color: #d81b60; }
+        .department-card.accent-baby .dept-icon { background: #e0f7fa; color: #00acc1; }
+        .department-card.accent-brain .dept-icon { background: #f3e8ff; color: #7c3aed; }
+        .department-card.accent-ambulance .dept-icon { background: #fce8e6; color: #d93025; }
+        .department-card.accent-ribbon .dept-icon { background: #f3e8ff; color: #a142f4; }
+        .department-card.accent-xray .dept-icon { background: #f1f3f4; color: #5f6368; }
+        .department-card.accent-pills .dept-icon { background: #e6f4ea; color: #1e8e3e; }
+        .department-card.accent-syringe .dept-icon { background: #ccfbf1; color: #0d9488; }
+
+        .dept-info { flex: 1; min-width: 0; }
+        .dept-info h3 {
+            font-size: 15px; font-weight: 600; color: var(--dark);
+            margin-bottom: 2px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .dept-info .dept-head {
+            color: var(--gray); font-size: 13px; margin-bottom: 6px;
+            display: flex; align-items: center; gap: 5px;
+        }
+        .dept-info .dept-head .mini-avatar {
+            width: 18px; height: 18px; border-radius: 50%;
+            background: var(--primary-light); color: var(--primary);
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 9px; font-weight: 600;
+        }
+
+        .status-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 2px 10px; border-radius: 12px;
+            font-size: 11px; font-weight: 500;
+        }
+        .status-badge::before {
+            content: ''; width: 6px; height: 6px;
+            border-radius: 50%; display: inline-block;
+        }
+        .status-badge.active { background: var(--success-bg); color: var(--success); }
+        .status-badge.active::before { background: var(--success); }
+        .status-badge.inactive { background: #f1f3f4; color: var(--gray); }
+        .status-badge.inactive::before { background: var(--muted); }
+
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            padding: 12px 16px 12px 20px;
+            border-bottom: 1px solid #f1f3f4;
+            background: #fafbfc;
+        }
+        .qs-item {
+            display: flex; flex-direction: column; align-items: flex-start;
+            font-size: 11px; color: var(--muted);
+        }
+        .qs-item .qs-val {
+            font-size: 15px; font-weight: 600; color: var(--dark);
+            line-height: 1.2;
+        }
+        .qs-item .qs-val i {
+            font-size: 12px; color: var(--muted); margin-right: 3px;
+        }
+
+        .card-body {
+            padding: 14px 16px 14px 20px;
+            flex: 1;
+        }
+
+        .dept-description {
+            font-size: 13px; color: var(--gray); line-height: 1.5;
+            margin-bottom: 12px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .occupancy { margin: 10px 0 12px; }
+        .occupancy-header {
+            display: flex; justify-content: space-between;
+            font-size: 11px; color: var(--muted);
+            margin-bottom: 5px;
+            text-transform: uppercase; letter-spacing: 0.4px;
+            font-weight: 500;
+        }
+        .occupancy-bar {
+            width: 100%; height: 6px; background: #f1f3f4;
+            border-radius: 3px; overflow: hidden;
+        }
+        .occupancy-fill {
+            height: 100%; background: var(--success);
+            border-radius: 3px;
+            transition: width 0.4s ease;
+        }
+        .occupancy-fill.warning { background: var(--warning); }
+        .occupancy-fill.danger { background: var(--danger); }
+
+        .detail-row {
+            display: flex; justify-content: space-between;
+            align-items: flex-start; padding: 5px 0;
+            font-size: 13px; gap: 12px;
+        }
+        .detail-row .label { color: var(--muted); flex-shrink: 0; }
+        .detail-row .value {
+            color: var(--text); text-align: right;
+            word-break: break-word;
+        }
+
+        .operating-hours {
+            display: inline-flex; align-items: center; gap: 5px;
+            font-size: 12px; color: var(--text);
+            background: var(--bg); padding: 3px 10px;
+            border-radius: 12px; margin-top: 8px;
+        }
+        .operating-hours i { color: var(--muted); }
+
+        .contact-info {
+            margin-top: 10px; padding-top: 10px;
+            border-top: 1px solid #f1f3f4;
+            font-size: 12px; color: var(--gray);
+            display: flex; flex-direction: column; gap: 5px;
+        }
+        .contact-info i {
+            width: 16px; color: var(--muted); margin-right: 4px;
+        }
+
+        /* Doctor roster */
+        .doctor-roster {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #f1f3f4;
+        }
+
+        .roster-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .roster-title {
+            font-size: 11px; font-weight: 600; color: var(--muted);
+            text-transform: uppercase; letter-spacing: 0.5px;
+            display: flex; align-items: center; gap: 5px;
+        }
+
+        .roster-title i { font-size: 11px; }
+
+        .roster-summary {
+            font-size: 11px; color: var(--muted);
+            display: flex; align-items: center; gap: 6px;
+        }
+        .roster-summary .live-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.35; }
+        }
+
+        .roster-list { display: flex; flex-direction: column; gap: 6px; }
+
+        .roster-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 6px 8px;
+            background: #fafbfc;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            transition: background 0.15s ease;
+        }
+        .roster-item:hover { background: #f1f3f4; }
+
+        .roster-item .doc-avatar {
+            width: 26px; height: 26px; border-radius: 50%;
+            background: var(--primary-light); color: var(--primary);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; font-weight: 600;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .roster-item .doc-avatar img {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+
+        .roster-item .doc-meta { flex: 1; min-width: 0; }
+        .roster-item .doc-meta .doc-name {
+            color: var(--dark); font-weight: 500;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .roster-item .doc-meta .doc-spec {
+            font-size: 11px; color: var(--muted);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        .shift-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .shift-badge::before {
+            content: ''; width: 5px; height: 5px;
+            border-radius: 50%; display: inline-block;
+        }
+        .shift-badge.on-shift {
+            background: var(--success-bg); color: var(--success);
+        }
+        .shift-badge.on-shift::before {
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+        .shift-badge.off-shift {
+            background: #f1f3f4; color: var(--muted);
+        }
+        .shift-badge.off-shift::before { background: var(--muted); }
+
+        .roster-empty {
+            font-size: 12px;
+            color: var(--muted);
+            padding: 8px 10px;
+            background: #fafbfc;
+            border-radius: var(--radius-sm);
+            text-align: center;
+            font-style: italic;
+        }
+
+        .roster-toggle {
+            background: transparent; border: none;
+            color: var(--primary); font-size: 11px;
+            font-weight: 500; cursor: pointer;
+            padding: 4px 0; margin-top: 4px;
+            display: flex; align-items: center; gap: 4px;
+            font-family: inherit;
+        }
+        .roster-toggle:hover { text-decoration: underline; }
+
+        .dept-actions {
+            padding: 10px 16px 14px 20px;
+            display: flex; gap: 8px;
+            border-top: 1px solid #f1f3f4;
+            background: #fafbfc;
+        }
+
+        .btn-icon {
+            background: #fff; border: 1px solid var(--border);
+            font-weight: 500; font-size: 12px;
+            padding: 7px 12px; border-radius: var(--radius-sm);
+            cursor: pointer;
+            display: flex; align-items: center; gap: 5px;
+            justify-content: center; color: var(--text);
+            font-family: inherit;
+            transition: background 0.15s ease;
+            flex: 1;
+        }
+        .btn-icon:hover { background: var(--bg); }
+        .btn-icon.btn-delete { color: var(--danger); }
+        .btn-icon.btn-delete:hover { background: var(--danger-bg); }
+
+        /* List view */
+        .departments-grid.list-view .department-card {
+            display: grid;
+            grid-template-columns: minmax(260px, 320px) 1fr auto;
+            grid-template-areas: "header body actions";
+            align-items: stretch;
+            gap: 0;
+            padding: 0;
+        }
+        .departments-grid.list-view .card-header {
+            grid-area: header;
+            border: none;
+            border-right: 1px solid #f1f3f4;
+            padding: 16px 16px 14px 20px;
+        }
+        .departments-grid.list-view .quick-stats { display: none; }
+        .departments-grid.list-view .card-body {
+            grid-area: body;
+            padding: 16px 16px 14px 20px;
+            border: none;
+        }
+        .departments-grid.list-view .dept-actions {
+            grid-area: actions;
+            border: none;
+            border-left: 1px solid #f1f3f4;
+            background: #fafbfc;
+            padding: 16px;
+            flex-direction: column;
+            justify-content: center;
+            min-width: 130px;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(32, 33, 36, 0.5);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000;
+            visibility: hidden; opacity: 0;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+        .modal-overlay.active { visibility: visible; opacity: 1; }
+
+        .modal-container {
+            background: #fff; width: 92%; max-width: 720px;
+            border-radius: var(--radius); overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            max-height: 90vh; overflow-y: auto;
+            transform: translateY(10px);
+            transition: transform 0.2s ease;
+        }
+        .modal-overlay.active .modal-container { transform: translateY(0); }
+
+        .modal-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid #f1f3f4;
+            display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; background: #fff; z-index: 10;
+        }
+        .modal-header h3 { font-size: 17px; font-weight: 600; color: var(--dark); }
+        .close-btn {
+            background: none; border: none; font-size: 22px;
+            color: var(--muted); cursor: pointer;
+            padding: 0 6px; line-height: 1; border-radius: var(--radius-sm);
+        }
+        .close-btn:hover { background: var(--bg); color: var(--dark); }
+
+        .modal-body { padding: 20px 24px; }
+
+        .form-section { margin-bottom: 22px; }
+        .form-section-header {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 12px; font-weight: 600; color: var(--primary);
+            text-transform: uppercase; letter-spacing: 0.6px;
+            padding-bottom: 8px; margin-bottom: 12px;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        .form-section-header i { font-size: 13px; }
+
+        .form-group { margin-bottom: 14px; }
+        .form-group label {
+            font-size: 12px; font-weight: 500; color: var(--gray);
+            display: block; margin-bottom: 5px;
+        }
+
+        .form-control {
+            width: 100%; padding: 9px 12px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            font-size: 14px; font-family: inherit;
+            color: var(--text); background: #fff;
+            transition: border-color 0.15s ease;
+        }
+        .form-control:focus { outline: none; border-color: var(--primary); }
+        textarea.form-control { resize: vertical; min-height: 70px; }
+
+        .form-row { display: flex; gap: 14px; flex-wrap: wrap; }
+        .form-row .form-group { flex: 1; min-width: 140px; }
+        .form-row.cols-3 .form-group { min-width: 100px; }
+
+        .modal-footer {
+            padding: 14px 24px;
+            display: flex; justify-content: flex-end; gap: 8px;
+            border-top: 1px solid #f1f3f4;
+            background: #fafbfc;
+            position: sticky; bottom: 0;
+        }
+        .modal-footer .btn {
+            padding: 9px 22px; border-radius: var(--radius-sm);
+            border: none; font-weight: 500; font-size: 13px;
+            cursor: pointer; font-family: inherit;
+        }
+        .btn-cancel {
+            background: #fff; color: var(--text);
+            border: 1px solid var(--border) !important;
+        }
+        .btn-cancel:hover { background: var(--bg); }
+        .btn-save { background: var(--primary); color: #fff; }
+        .btn-save:hover { background: var(--primary-dark); }
+
+        .toast {
+            position: fixed; bottom: 20px; right: 20px;
+            padding: 12px 18px; border-radius: var(--radius-sm);
+            color: #fff; font-weight: 500; font-size: 13px;
+            z-index: 9999; box-shadow: var(--shadow-lg);
+            max-width: 360px; animation: slideUp 0.25s ease;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .empty-state {
+            grid-column: 1 / -1; text-align: center;
+            padding: 48px 20px; background: #fff;
+            border-radius: var(--radius); border: 1px solid var(--border);
+        }
+        .empty-state i {
+            font-size: 36px; color: var(--muted); margin-bottom: 12px;
+        }
+        .empty-state h3 {
+            font-size: 16px; color: var(--dark);
+            margin-bottom: 4px; font-weight: 600;
+        }
+        .empty-state p { color: var(--muted); font-size: 13px; }
+
+        @media (max-width: 1100px) {
+            .departments-grid.list-view .department-card {
+                grid-template-columns: 1fr;
+                grid-template-areas: "header" "body" "actions";
+            }
+            .departments-grid.list-view .card-header {
+                border-right: none;
+                border-bottom: 1px solid #f1f3f4;
+            }
+            .departments-grid.list-view .dept-actions {
+                flex-direction: row;
+                border-left: none;
+                border-top: 1px solid #f1f3f4;
+            }
+        }
+        @media (max-width: 992px) {
+            .stats-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.mobile-open { transform: translateX(0); }
+            .main-panel { margin-left: 0; }
+            .menu-icon { display: block; }
+            .content { padding: 16px; }
+            .top-bar { padding: 0 16px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .departments-grid { grid-template-columns: 1fr; }
+            .user-profile .user-name,
+            .user-profile .user-role { display: none; }
+            .filters-bar { flex-direction: column; align-items: stretch; }
+            .filter-group { min-width: 100%; }
+            .filter-btn { margin-top: 4px; justify-content: center; }
+            .view-toggle { margin-top: 4px; }
+            .quick-stats { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .stat-tile { padding: 12px; }
+            .stat-tile .stat-number { font-size: 18px; }
+            .modal-body { padding: 16px; }
+            .form-row { flex-direction: column; }
+            .form-row .form-group { min-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <div class="sidebar" id="sidebar">
+        <div class="logo">
+            <i class="fas fa-heartbeat"></i>
+            <h1>MediCare <span>Pro</span></h1>
+        </div>
+        <ul class="nav-links">
+            <li><a href="dashboard.html"><i class="fas fa-home"></i><span>Dashboard</span></a></li>
+            <li><a href="patients.html"><i class="fas fa-user-injured"></i><span>Patients</span></a></li>
+            <li><a href="appointment.html"><i class="fas fa-calendar-check"></i><span>Appointments</span></a></li>
+            <li><a href="doctors.html"><i class="fas fa-user-md"></i><span>Doctors</span></a></li>
+            <li class="active"><a href="departments.html"><i class="fas fa-procedures"></i><span>Departments</span></a></li>
+            <li><a href="pharmacy.html"><i class="fas fa-pills"></i><span>Pharmacy</span></a></li>
+            <li><a href="medicalreports.html"><i class="fas fa-file-medical"></i><span>Medical Records</span></a></li>
+            <li><a href="settings.html"><i class="fas fa-cog"></i><span>Settings</span></a></li>
+            <li><a href="loginpg.html"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a></li>
+        </ul>
+    </div>
+
+    <div class="main-panel">
+        <div class="top-bar">
+            <div class="header-left">
+                <div class="menu-icon" id="menuToggle"><i class="fas fa-bars"></i></div>
+            </div>
+            <div class="header-right">
+                <div class="notification">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge">3</span>
+                </div>
+                <div class="user-profile">
+                    <img src="https://i.pravatar.cc/100?img=12" alt="Profile">
+                    <div>
+                        <div class="user-name">Dr. Admin</div>
+                        <div class="user-role">Administrator</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="page-header">
+                <div>
+                    <h1>
+                        Departments
+                        <small>Manage hospital departments, staff, and live doctor rosters</small>
+                    </h1>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-primary" id="addDepartmentBtn">
+                        <i class="fas fa-plus"></i> Add Department
+                    </button>
+                </div>
+            </div>
+
+            <div class="stats-grid" id="statsContainer"></div>
+
+            <div class="filters-bar">
+                <div class="filter-group">
+                    <label>Status</label>
+                    <select id="filterStatus">
+                        <option value="all">All Status</option>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Sort by</label>
+                    <select id="sortBy">
+                        <option value="name">Name (A–Z)</option>
+                        <option value="staff-desc">Most Staff</option>
+                        <option value="beds-desc">Most Beds</option>
+                        <option value="on-shift-desc">Most Doctors On Shift</option>
+                        <option value="recent">Recently Added</option>
+                    </select>
+                </div>
+                <div class="real-time-search filter-group">
+                    <label>Search</label>
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="liveSearch" placeholder="Search by name, head, or code...">
+                </div>
+                <div class="filter-group" style="flex: 0 0 auto;">
+                    <button class="filter-btn" onclick="applyFilters()">
+                        <i class="fas fa-filter"></i> Filter
+                    </button>
+                </div>
+                <div class="filter-group" style="flex: 0 0 auto;">
+                    <div class="view-toggle" id="viewToggle">
+                        <button class="active" data-view="grid"><i class="fas fa-th-large"></i> Grid</button>
+                        <button data-view="list"><i class="fas fa-list"></i> List</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="departmentsGridContainer" class="departments-grid"></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="departmentModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3 id="modalTitle">Add New Department</h3>
+            <button class="close-btn" id="closeModalBtn">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="departmentForm">
+                <input type="hidden" id="editId" value="">
+
+                <div class="form-section">
+                    <div class="form-section-header">
+                        <i class="fas fa-info-circle"></i> Basic Information
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Department Name *</label>
+                            <input id="name" class="form-control" placeholder="e.g., Cardiology" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Department Code</label>
+                            <input id="code" class="form-control" placeholder="e.g., CARD">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Head of Department *</label>
+                            <input id="head" class="form-control" placeholder="e.g., Dr. Michael Miller" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select id="status" class="form-control">
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Location / Floor</label>
+                            <input id="location" class="form-control" placeholder="e.g., Floor 3, Block A">
+                        </div>
+                        <div class="form-group">
+                            <label>Operating Hours</label>
+                            <input id="operatingHours" class="form-control" placeholder="e.g., Mon–Fri, 8AM–6PM">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-header">
+                        <i class="fas fa-address-book"></i> Contact
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Department Email</label>
+                            <input type="email" id="email" class="form-control" placeholder="dept@hospital.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Department Phone</label>
+                            <input id="phone" class="form-control" placeholder="+1 234 567 8900">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Head's Email</label>
+                            <input type="email" id="headEmail" class="form-control" placeholder="head@hospital.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Extension / Internal</label>
+                            <input id="extension" class="form-control" placeholder="e.g., 3201">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-header">
+                        <i class="fas fa-bed"></i> Capacity & Resources
+                    </div>
+
+                    <div class="form-row cols-3">
+                        <div class="form-group">
+                            <label>Total Beds</label>
+                            <input type="number" id="totalBeds" class="form-control" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Beds Available</label>
+                            <input type="number" id="bedsAvailable" class="form-control" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Total Rooms</label>
+                            <input type="number" id="totalRooms" class="form-control" placeholder="0" min="0">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-header">
+                        <i class="fas fa-users"></i> Staffing
+                        <span style="font-size:10px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;margin-left:6px;">(Doctors count is auto-computed from the Doctors list)</span>
+                    </div>
+
+                    <div class="form-row cols-3">
+                        <div class="form-group">
+                            <label>Doctors (auto)</label>
+                            <input type="number" id="doctorsCount" class="form-control" placeholder="0" min="0" readonly style="background:#f1f3f4;cursor:not-allowed;">
+                        </div>
+                        <div class="form-group">
+                            <label>Nurses</label>
+                            <input type="number" id="nursesCount" class="form-control" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Technicians</label>
+                            <input type="number" id="techniciansCount" class="form-control" placeholder="0" min="0">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Admin / Support Staff</label>
+                            <input type="number" id="adminStaffCount" class="form-control" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Total Staff (auto if blank)</label>
+                            <input type="number" id="staffCount" class="form-control" placeholder="0" min="0">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-header">
+                        <i class="fas fa-stethoscope"></i> Services & Equipment
+                    </div>
+
+                    <div class="form-group">
+                        <label>Services Offered (one per line)</label>
+                        <textarea id="services" class="form-control" rows="3" placeholder="e.g.,&#10;ECG & Stress Testing&#10;Echocardiography"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Key Equipment (one per line)</label>
+                        <textarea id="equipment" class="form-control" rows="2" placeholder="e.g.,&#10;MRI Scanner&#10;CT Scanner"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="description" class="form-control" rows="3" placeholder="Brief description of the department's services..."></textarea>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-cancel" id="closeModalBtn2">Cancel</button>
+            <button class="btn btn-save" id="saveDepartmentBtn"><i class="fas fa-save"></i> Save Department</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- API CONFIG ----------
+    const API_URL = window.location.origin + '/api/departments';
+    const DOCTORS_API_URL = window.location.origin + '/api/doctors';
+    const UPLOAD_URL = window.location.origin;
+    const ROSTER_REFRESH_MS = 30000;
+    const ROSTER_PREVIEW_COUNT = 3;
+
+    // ---------- STATE ----------
+    let departments = [];
+    let doctors = [];
+    let currentFilters = { status: "all", search: "", sort: "name" };
+    let currentView = "grid";
+    let expandedRosters = new Set();
+    let rosterRefreshTimer = null;
+
+    // ---------- ICON MAP ----------
+    const ICON_MAP = {
+        cardiology: { icon: 'fa-heart', accent: 'accent-heart' },
+        orthopedics: { icon: 'fa-bone', accent: 'accent-bone' },
+        dermatology: { icon: 'fa-hand-dots', accent: 'accent-dots' },
+        pediatrics: { icon: 'fa-baby', accent: 'accent-baby' },
+        neurology: { icon: 'fa-brain', accent: 'accent-brain' },
+        emergency: { icon: 'fa-ambulance', accent: 'accent-ambulance' },
+        oncology: { icon: 'fa-ribbon', accent: 'accent-ribbon' },
+        radiology: { icon: 'fa-x-ray', accent: 'accent-xray' },
+        pharmacy: { icon: 'fa-pills', accent: 'accent-pills' },
+        surgery: { icon: 'fa-syringe', accent: 'accent-syringe' },
+        general: { icon: 'fa-hospital', accent: 'accent-hospital' }
+    };
+
+    function getDeptVisual(name) {
+        if (!name) return { icon: 'fa-hospital', accent: 'accent-hospital' };
+        const key = name.toLowerCase().split(' ')[0];
+        return ICON_MAP[key] || { icon: 'fa-hospital', accent: 'accent-hospital' };
+    }
+
+    // ---------- HELPERS ----------
+    function escapeHtml(s) {
+        if (s === null || s === undefined) return '';
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function initials(name) {
+        if (!name) return '?';
+        return name
+            .replace(/^Dr\.?\s*/i, '')
+            .split(/\s+/)
+            .filter(Boolean)
+            .slice(0, 2)
+            .map(w => w[0].toUpperCase())
+            .join('');
+    }
+
+    // ---------- SHIFT LOGIC ----------
+    function getTodayName() {
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        return days[new Date().getDay()];
+    }
+
+    function getCurrentTimeHHMM() {
+        const d = new Date();
+        const hh = String(d.getHours()).padStart(2, '0');
+        const mm = String(d.getMinutes()).padStart(2, '0');
+        return `${hh}:${mm}`;
+    }
+
+    function getDoctorShiftInfo(doctor) {
+        const nowDay = getTodayName();
+        const nowTime = getCurrentTimeHHMM();
+        const availability = Array.isArray(doctor.availability) ? doctor.availability : [];
+
+        if (!availability.length) {
+            return { onShift: false, label: 'No schedule' };
+        }
+
+        const todayEntries = availability.filter(a => a.day === nowDay && a.isAvailable !== false);
+
+        if (!todayEntries.length) {
+            const next = availability.find(a => a.isAvailable !== false);
+            return {
+                onShift: false,
+                label: next ? `${next.day.slice(0, 3)} ${next.startTime}–${next.endTime}` : 'No schedule'
+            };
+        }
+
+        const activeEntry = todayEntries.find(a => nowTime >= a.startTime && nowTime <= a.endTime);
+        if (activeEntry) {
+            return { onShift: true, label: `${activeEntry.startTime}–${activeEntry.endTime}` };
+        }
+
+        const upcoming = todayEntries.find(a => nowTime < a.startTime);
+        if (upcoming) {
+            return { onShift: false, label: `Starts ${upcoming.startTime}` };
+        }
+
+        const finished = todayEntries[todayEntries.length - 1];
+        return { onShift: false, label: `Ended ${finished.endTime}` };
+    }
+
+    function getDoctorsByDepartment(deptName) {
+        if (!deptName) return [];
+        const key = deptName.trim().toLowerCase();
+        return doctors.filter(d => (d.department || '').trim().toLowerCase() === key);
+    }
+
+    function countDoctorsOnShift(deptName) {
+        return getDoctorsByDepartment(deptName)
+            .filter(d => getDoctorShiftInfo(d).onShift).length;
+    }
+
+    // ---------- API ----------
+    async function fetchDepartments() {
+        const container = document.getElementById("departmentsGridContainer");
+        try {
+            const response = await fetch(API_URL);
+            if (!response.ok) throw new Error('Failed to fetch departments');
+            const result = await response.json();
+            departments = (result.data || []).map(d => ({
+                ...d,
+                id: d.id || d._id
+            }));
+            renderAll();
+        } catch (error) {
+            console.error('Fetch departments error:', error);
+            departments = [];
+            renderAll();
+            showToast('Failed to load departments from server', '#d93025');
+        }
+    }
+
+    async function fetchDoctors() {
+        try {
+            const response = await fetch(DOCTORS_API_URL);
+            if (!response.ok) throw new Error('Failed to fetch doctors');
+            const result = await response.json();
+            doctors = (result.data || []).map(d => ({
+                ...d,
+                id: d.id || d._id
+            }));
+        } catch (error) {
+            console.error('Fetch doctors error:', error);
+            doctors = [];
+        }
+    }
+
+    async function createDepartment(data) {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.message || 'Failed to create department');
+        return result.data;
+    }
+
+    async function updateDepartment(id, data) {
+        const response = await fetch(`${API_URL}/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.message || 'Failed to update department');
+        return result.data;
+    }
+
+    async function deleteDepartment(id) {
+        const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+        if (!response.ok) {
+            const result = await response.json().catch(() => ({}));
+            throw new Error(result.message || 'Failed to delete department');
+        }
+        return true;
+    }
+
+    // ---------- RENDER ----------
+    function renderStats() {
+        const total = departments.length;
+        const active = departments.filter(d => d.status === "Active").length;
+        const inactive = departments.filter(d => d.status === "Inactive").length;
+        const totalStaff = departments.reduce((sum, d) => sum + getTotalStaff(d), 0);
+        const avgStaff = total ? (totalStaff / total).toFixed(1) : 0;
+        const totalBeds = departments.reduce((sum, d) => sum + (parseInt(d.totalBeds) || 0), 0);
+        const onShiftNow = doctors.filter(d => getDoctorShiftInfo(d).onShift).length;
+        const totalDoctors = doctors.length;
+
+        document.getElementById("statsContainer").innerHTML = `
+            <div class="stat-tile">
+                <div class="stat-number">${total}</div>
+                <div class="stat-label">Total Departments</div>
+            </div>
+            <div class="stat-tile">
+                <div class="stat-number" style="color: var(--success);">${active}</div>
+                <div class="stat-label">Active</div>
+            </div>
+            <div class="stat-tile">
+                <div class="stat-number" style="color: var(--muted);">${inactive}</div>
+                <div class="stat-label">Inactive</div>
+            </div>
+            <div class="stat-tile">
+                <div class="stat-number" style="color: var(--purple);">${totalDoctors}</div>
+                <div class="stat-label">Total Doctors</div>
+            </div>
+            <div class="stat-tile">
+                <div class="stat-number" style="color: var(--success);">${onShiftNow}</div>
+                <div class="stat-label">Doctors On Shift Now</div>
+            </div>
+            <div class="stat-tile">
+                <div class="stat-number" style="color: var(--teal);">${avgStaff}</div>
+                <div class="stat-label">Avg Staff / Dept</div>
+            </div>
+            <div class="stat-tile">
+                <div class="stat-number" style="color: var(--warning);">${totalBeds}</div>
+                <div class="stat-label">Total Beds</div>
+            </div>
+        `;
+    }
+
+    function getTotalStaff(d) {
+        const doctorsLive = getDoctorsByDepartment(d.name).length;
+        const nurses = parseInt(d.nursesCount) || 0;
+        const techs = parseInt(d.techniciansCount) || 0;
+        const admin = parseInt(d.adminStaffCount) || 0;
+        return doctorsLive + nurses + techs + admin;
+    }
+
+    function sortDepartments(list, sortBy) {
+        const sorted = [...list];
+        switch (sortBy) {
+            case "staff-desc":
+                sorted.sort((a, b) => getTotalStaff(b) - getTotalStaff(a));
+                break;
+            case "beds-desc":
+                sorted.sort((a, b) => (parseInt(b.totalBeds) || 0) - (parseInt(a.totalBeds) || 0));
+                break;
+            case "on-shift-desc":
+                sorted.sort((a, b) => countDoctorsOnShift(b.name) - countDoctorsOnShift(a.name));
+                break;
+            case "recent":
+                sorted.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+                break;
+            case "name":
+            default:
+                sorted.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                break;
+        }
+        return sorted;
+    }
+
+    function renderDepartmentCards() {
+        const { status, search, sort } = currentFilters;
+        let filtered = [...departments];
+
+        if (status !== "all") filtered = filtered.filter(d => d.status === status);
+        if (search) {
+            const s = search.toLowerCase();
+            filtered = filtered.filter(d =>
+                (d.name || "").toLowerCase().includes(s) ||
+                (d.head || "").toLowerCase().includes(s) ||
+                (d.code || "").toLowerCase().includes(s)
+            );
+        }
+        filtered = sortDepartments(filtered, sort);
+
+        const container = document.getElementById("departmentsGridContainer");
+        container.className = currentView === "list"
+            ? "departments-grid list-view"
+            : "departments-grid";
+
+        if (!filtered.length) {
+            const isEmptyDb = departments.length === 0;
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-procedures"></i>
+                    <h3>${isEmptyDb ? 'No departments yet' : 'No departments match your filters'}</h3>
+                    <p>${isEmptyDb
+                        ? 'Click "Add Department" to create your first department. Doctors assigned to it will appear automatically.'
+                        : 'Try adjusting your filters.'}</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = filtered.map(dept => renderDeptCard(dept)).join("");
+
+        container.querySelectorAll(".editDepartmentBtn").forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                openEditModal(this.getAttribute("data-id"));
+            });
+        });
+
+        container.querySelectorAll(".deleteDepartmentBtn").forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const id = this.getAttribute("data-id");
+                if (confirm("Are you sure you want to delete this department? This action cannot be undone.")) {
+                    deleteDepartmentById(id);
+                }
+            });
+        });
+
+        container.querySelectorAll(".roster-toggle").forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const id = this.getAttribute("data-id");
+                if (expandedRosters.has(id)) expandedRosters.delete(id);
+                else expandedRosters.add(id);
+                renderDepartmentCards();
+            });
+        });
+    }
+
+    function renderRoster(dept) {
+        const deptDoctors = getDoctorsByDepartment(dept.name);
+
+        if (!deptDoctors.length) {
+            return `
+                <div class="doctor-roster">
+                    <div class="roster-header">
+                        <div class="roster-title"><i class="fas fa-user-md"></i> Doctors On Duty</div>
+                    </div>
+                    <div class="roster-empty">No doctors assigned yet — add one via the Doctors page and set its department to "${escapeHtml(dept.name)}".</div>
+                </div>
+            `;
+        }
+
+        const enriched = deptDoctors.map(d => ({ doctor: d, shift: getDoctorShiftInfo(d) }));
+        enriched.sort((a, b) => {
+            if (a.shift.onShift !== b.shift.onShift) return a.shift.onShift ? -1 : 1;
+            const an = `${a.doctor.firstName} ${a.doctor.lastName}`.toLowerCase();
+            const bn = `${b.doctor.firstName} ${b.doctor.lastName}`.toLowerCase();
+            return an.localeCompare(bn);
+        });
+
+        const onShiftCount = enriched.filter(e => e.shift.onShift).length;
+        const expanded = expandedRosters.has(dept.id);
+        const visible = expanded ? enriched : enriched.slice(0, ROSTER_PREVIEW_COUNT);
+
+        const items = visible.map(({ doctor, shift }) => {
+            const fullName = `Dr. ${doctor.firstName} ${doctor.lastName}`;
+            const photoUrl = doctor.profilePhoto
+                ? `${UPLOAD_URL}${doctor.profilePhoto}`
+                : `https://i.pravatar.cc/80?img=${doctor.avatarSeed || 50}`;
+
+            const shiftClass = shift.onShift ? 'on-shift' : 'off-shift';
+            const shiftLabel = shift.onShift ? 'On Shift' : 'Off Shift';
+
+            return `
+                <div class="roster-item">
+                    <div class="doc-avatar">
+                        <img src="${photoUrl}" alt="${escapeHtml(fullName)}" onerror="this.style.display='none';this.parentElement.textContent='${initials(fullName)}'">
+                    </div>
+                    <div class="doc-meta">
+                        <div class="doc-name">${escapeHtml(fullName)}</div>
+                        <div class="doc-spec">${escapeHtml(doctor.specialization || 'General')} · ${escapeHtml(shift.label)}</div>
+                    </div>
+                    <span class="shift-badge ${shiftClass}">${shiftLabel}</span>
+                </div>
+            `;
+        }).join('');
+
+        const remaining = enriched.length - ROSTER_PREVIEW_COUNT;
+        const toggleBtn = remaining > 0
+            ? `<button class="roster-toggle" data-id="${dept.id}">
+                   <i class="fas fa-chevron-${expanded ? 'up' : 'down'}"></i>
+                   ${expanded ? 'Show less' : `View all ${enriched.length} doctors`}
+               </button>`
+            : '';
+
+        return `
+            <div class="doctor-roster">
+                <div class="roster-header">
+                    <div class="roster-title"><i class="fas fa-user-md"></i> Doctors On Duty</div>
+                    <div class="roster-summary">
+                        <span class="live-dot"></span>
+                        ${onShiftCount} on shift · ${enriched.length} total
+                    </div>
+                </div>
+                <div class="roster-list">
+                    ${items}
+                </div>
+                ${toggleBtn}
+            </div>
+        `;
+    }
+
+    function renderDeptCard(dept) {
+        const statusClass = dept.status === "Active" ? "active" : "inactive";
+        const visual = getDeptVisual(dept.name);
+        const doctorsLive = getDoctorsByDepartment(dept.name).length;
+        const staff = getTotalStaff(dept);
+
+        const nursesCount = parseInt(dept.nursesCount) || 0;
+        const totalBeds = parseInt(dept.totalBeds) || 0;
+        const bedsAvailable = parseInt(dept.bedsAvailable) || 0;
+        const totalRooms = parseInt(dept.totalRooms) || 0;
+
+        let occupancyHTML = '';
+        if (totalBeds > 0) {
+            const occupied = Math.max(0, totalBeds - bedsAvailable);
+            const pct = Math.min(100, Math.round((occupied / totalBeds) * 100));
+            let fillClass = '';
+            if (pct >= 85) fillClass = 'danger';
+            else if (pct >= 65) fillClass = 'warning';
+            occupancyHTML = `
+                <div class="occupancy">
+                    <div class="occupancy-header">
+                        <span>Bed Occupancy</span>
+                        <span>${occupied}/${totalBeds} (${pct}%)</span>
+                    </div>
+                    <div class="occupancy-bar">
+                        <div class="occupancy-fill ${fillClass}" style="width:${pct}%;"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        const quickStats = `
+            <div class="quick-stats">
+                <div class="qs-item">
+                    <span class="qs-val"><i class="fas fa-user-md"></i>${doctorsLive}</span>
+                    <span>Doctors</span>
+                </div>
+                <div class="qs-item">
+                    <span class="qs-val"><i class="fas fa-user-nurse"></i>${nursesCount}</span>
+                    <span>Nurses</span>
+                </div>
+                <div class="qs-item">
+                    <span class="qs-val"><i class="fas fa-bed"></i>${bedsAvailable}</span>
+                    <span>Beds Free</span>
+                </div>
+                <div class="qs-item">
+                    <span class="qs-val"><i class="fas fa-door-open"></i>${totalRooms}</span>
+                    <span>Rooms</span>
+                </div>
+            </div>
+        `;
+
+        const hoursHTML = dept.operatingHours
+            ? `<span class="operating-hours"><i class="fas fa-clock"></i>${escapeHtml(dept.operatingHours)}</span>`
+            : '';
+
+        const contactHTML = (dept.email || dept.phone || dept.extension) ? `
+            <div class="contact-info">
+                ${dept.email ? `<span><i class="fas fa-envelope"></i>${escapeHtml(dept.email)}</span>` : ''}
+                ${dept.phone ? `<span><i class="fas fa-phone"></i>${escapeHtml(dept.phone)}</span>` : ''}
+                ${dept.extension ? `<span><i class="fas fa-phone-volume"></i>Ext. ${escapeHtml(dept.extension)}</span>` : ''}
+            </div>
+        ` : '';
+
+        const rosterHTML = renderRoster(dept);
+
+        return `
+        <div class="department-card ${visual.accent}" data-id="${dept.id}">
+            <div class="card-header">
+                <div class="dept-icon">
+                    <i class="fas ${visual.icon}"></i>
+                </div>
+                <div class="dept-info">
+                    <h3>${escapeHtml(dept.name)}${dept.code ? ` <span style="color:var(--muted);font-weight:400;font-size:12px;">· ${escapeHtml(dept.code)}</span>` : ''}</h3>
+                    <div class="dept-head">
+                        <span class="mini-avatar">${initials(dept.head)}</span>
+                        ${escapeHtml(dept.head || 'No head assigned')}
+                    </div>
+                    <span class="status-badge ${statusClass}">${dept.status}</span>
+                </div>
+            </div>
+
+            ${quickStats}
+
+            <div class="card-body">
+                ${dept.description ? `<p class="dept-description">${escapeHtml(dept.description)}</p>` : ''}
+                ${occupancyHTML}
+                <div class="detail-row">
+                    <span class="label">Total Staff</span>
+                    <span class="value">${staff} members</span>
+                </div>
+                ${dept.location ? `
+                <div class="detail-row">
+                    <span class="label">Location</span>
+                    <span class="value">${escapeHtml(dept.location)}</span>
+                </div>` : ''}
+                ${hoursHTML}
+                ${contactHTML}
+                ${rosterHTML}
+            </div>
+
+            <div class="dept-actions">
+                <button class="btn-icon editDepartmentBtn" data-id="${dept.id}">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                <button class="btn-icon btn-delete deleteDepartmentBtn" data-id="${dept.id}">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>`;
+    }
+
+    // ---------- CRUD ----------
+    async function deleteDepartmentById(id) {
+        try {
+            await deleteDepartment(id);
+            departments = departments.filter(d => d.id !== id);
+            expandedRosters.delete(id);
+            renderAll();
+            showToast('Department removed successfully', '#d93025');
+        } catch (error) {
+            console.error('Delete error:', error);
+            showToast(error.message || 'Failed to delete department', '#d93025');
+        }
+    }
+
+    function openEditModal(id) {
+        const dept = departments.find(d => d.id === id);
+        if (!dept) {
+            resetModalForm();
+        } else {
+            document.getElementById("modalTitle").textContent = 'Edit Department';
+            document.getElementById("editId").value = dept.id;
+
+            document.getElementById("name").value = dept.name || '';
+            document.getElementById("code").value = dept.code || '';
+            document.getElementById("head").value = dept.head || '';
+            document.getElementById("status").value = dept.status || 'Active';
+            document.getElementById("location").value = dept.location || '';
+            document.getElementById("operatingHours").value = dept.operatingHours || '';
+
+            document.getElementById("email").value = dept.email || '';
+            document.getElementById("phone").value = dept.phone || '';
+            document.getElementById("headEmail").value = dept.headEmail || '';
+            document.getElementById("extension").value = dept.extension || '';
+
+            document.getElementById("totalBeds").value = dept.totalBeds || '';
+            document.getElementById("bedsAvailable").value = dept.bedsAvailable || '';
+            document.getElementById("totalRooms").value = dept.totalRooms || '';
+
+            // Doctors count reflects the live number from the Doctors collection
+            document.getElementById("doctorsCount").value = getDoctorsByDepartment(dept.name).length;
+
+            document.getElementById("nursesCount").value = dept.nursesCount || '';
+            document.getElementById("techniciansCount").value = dept.techniciansCount || '';
+            document.getElementById("adminStaffCount").value = dept.adminStaffCount || '';
+            document.getElementById("staffCount").value = dept.staffCount || '';
+
+            document.getElementById("services").value = dept.services || '';
+            document.getElementById("equipment").value = dept.equipment || '';
+            document.getElementById("description").value = dept.description || '';
+        }
+        document.getElementById("departmentModal").classList.add("active");
+        document.body.style.overflow = 'hidden';
+    }
+
+    function resetModalForm() {
+        document.getElementById("modalTitle").textContent = 'Add New Department';
+        document.getElementById("editId").value = "";
+        document.getElementById("departmentForm").reset();
+        document.getElementById("doctorsCount").value = '';
+    }
+
+    function numOrNull(id) {
+        const el = document.getElementById(id);
+        if (!el) return null;
+        const v = el.value.trim();
+        if (v === '') return null;
+        const n = parseInt(v, 10);
+        return isNaN(n) ? null : n;
+    }
+
+    function textOrEmpty(id) {
+        const el = document.getElementById(id);
+        return el ? el.value.trim() : '';
+    }
+
+    async function saveDepartmentHandler() {
+        const id = document.getElementById("editId").value;
+        const name = textOrEmpty("name");
+        const head = textOrEmpty("head");
+
+        if (!name || !head) {
+            showToast('Please fill all required fields', '#b06000');
+            return;
+        }
+
+        // Auto-compute doctors count from the actual doctor list
+        const liveDoctors = getDoctorsByDepartment(name).length;
+
+        // Auto-compute total staff if blank
+        let staffCount = numOrNull("staffCount");
+        if (staffCount === null || staffCount === 0) {
+            const sum =
+                liveDoctors +
+                (numOrNull("nursesCount") || 0) +
+                (numOrNull("techniciansCount") || 0) +
+                (numOrNull("adminStaffCount") || 0);
+            staffCount = sum;
+        }
+
+        const payload = {
+            name,
+            code: textOrEmpty("code"),
+            head,
+            status: document.getElementById("status").value,
+            location: textOrEmpty("location"),
+            operatingHours: textOrEmpty("operatingHours"),
+            email: textOrEmpty("email"),
+            phone: textOrEmpty("phone"),
+            headEmail: textOrEmpty("headEmail"),
+            extension: textOrEmpty("extension"),
+            totalBeds: numOrNull("totalBeds"),
+            bedsAvailable: numOrNull("bedsAvailable"),
+            totalRooms: numOrNull("totalRooms"),
+            doctorsCount: liveDoctors,
+            nursesCount: numOrNull("nursesCount"),
+            techniciansCount: numOrNull("techniciansCount"),
+            adminStaffCount: numOrNull("adminStaffCount"),
+            staffCount,
+            services: textOrEmpty("services"),
+            equipment: textOrEmpty("equipment"),
+            description: textOrEmpty("description")
+        };
+
+        try {
+            if (id) {
+                await updateDepartment(id, payload);
+                showToast('Department updated successfully', '#1a73e8');
+            } else {
+                await createDepartment(payload);
+                showToast('New department added successfully', '#1e8e3e');
+            }
+
+            await fetchDepartments();
+            document.getElementById("departmentModal").classList.remove("active");
+            document.body.style.overflow = '';
+            resetModalForm();
+        } catch (error) {
+            console.error('Save department error:', error);
+            showToast(error.message || 'Error saving department. Please try again.', '#d93025');
+        }
+    }
+
+    // ---------- FILTERS / VIEW ----------
+    function applyFilters() {
+        const statusVal = document.getElementById("filterStatus")?.value || "all";
+        const searchVal = document.getElementById("liveSearch")?.value.toLowerCase() || "";
+        const sortVal = document.getElementById("sortBy")?.value || "name";
+        currentFilters = { status: statusVal, search: searchVal, sort: sortVal };
+        renderDepartmentCards();
+    }
+
+    function renderAll() {
+        renderStats();
+        renderDepartmentCards();
+    }
+
+    function showToast(msg, bgColor = "#1a73e8") {
+        const existing = document.querySelector('.toast');
+        if (existing) existing.remove();
+
+        const toast = document.createElement("div");
+        toast.className = "toast";
+        toast.style.background = bgColor;
+        toast.textContent = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    function setView(view) {
+        currentView = view;
+        document.querySelectorAll('#viewToggle button').forEach(b => {
+            b.classList.toggle('active', b.getAttribute('data-view') === view);
+        });
+        renderDepartmentCards();
+        try { localStorage.setItem('medicare_dept_view', view); } catch (e) {}
+    }
+
+    function startRosterRefresh() {
+        if (rosterRefreshTimer) clearInterval(rosterRefreshTimer);
+        rosterRefreshTimer = setInterval(async () => {
+            await fetchDoctors();
+            await fetchDepartments();
+        }, ROSTER_REFRESH_MS);
+    }
+
+    // ---------- INIT ----------
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const saved = localStorage.getItem('medicare_dept_view');
+            if (saved === 'grid' || saved === 'list') currentView = saved;
+        } catch (e) {}
+
+        document.querySelectorAll('#viewToggle button').forEach(b => {
+            b.classList.toggle('active', b.getAttribute('data-view') === currentView);
+        });
+
+        await fetchDoctors();
+        await fetchDepartments();
+
+        document.getElementById("filterStatus").addEventListener("change", applyFilters);
+        document.getElementById("sortBy").addEventListener("change", applyFilters);
+        document.getElementById("liveSearch").addEventListener("input", applyFilters);
+
+        document.querySelectorAll('#viewToggle button').forEach(btn => {
+            btn.addEventListener('click', function () {
+                setView(this.getAttribute('data-view'));
+            });
+        });
+
+        const modal = document.getElementById("departmentModal");
+
+        document.getElementById("addDepartmentBtn").addEventListener("click", () => {
+            resetModalForm();
+            modal.classList.add("active");
+            document.body.style.overflow = 'hidden';
+        });
+
+        document.getElementById("closeModalBtn").addEventListener("click", () => {
+            modal.classList.remove("active");
+            document.body.style.overflow = '';
+        });
+
+        document.getElementById("closeModalBtn2").addEventListener("click", () => {
+            modal.classList.remove("active");
+            document.body.style.overflow = '';
+        });
+
+        document.getElementById("saveDepartmentBtn").addEventListener("click", saveDepartmentHandler);
+
+        window.addEventListener("click", (e) => {
+            if (e.target === modal) {
+                modal.classList.remove("active");
+                document.body.style.overflow = '';
+            }
+        });
+
+        document.getElementById("menuToggle").addEventListener("click", () => {
+            document.getElementById("sidebar").classList.toggle("mobile-open");
+        });
+
+        document.addEventListener('click', (e) => {
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.getElementById('menuToggle');
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
+                    sidebar.classList.remove('mobile-open');
+                }
+            }
+        });
+
+        startRosterRefresh();
+
+        document.addEventListener('visibilitychange', async () => {
+            if (!document.hidden) {
+                await fetchDoctors();
+                await fetchDepartments();
+            }
+        });
+    });
+</script>
+</body>
+</html>
